@@ -49,6 +49,7 @@ jobs:
   render:
     needs: plan
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       max-parallel: 20
@@ -67,17 +68,20 @@ jobs:
       - name: Blender o'rnatish
         if: steps.cache-blender.outputs.cache-hit != 'true'
         run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq curl xz-utils
+          sudo timedatectl set-ntp false 2>/dev/null || true
+          timeout 240 sudo apt-get update -qq || true
+          timeout 240 sudo apt-get install -y -qq --no-install-recommends \
+            curl xz-utils libx11-6 libxi6 libxxf86vm1 libxfixes3 libxrender1 \
+            libgl1 libegl1 libsm6 libice6 libglib2.0-0 || echo "apt qisman o'tdi"
           curl -fsSL "https://download.blender.org/release/Blender4.3/blender-${BLENDER_VER}-linux-x64.tar.xz" -o /tmp/b.tar.xz
           mkdir -p ~/blender
           tar -xf /tmp/b.tar.xz -C ~/blender --strip-components=1
           ~/blender/blender --version | head -1
 
-      - name: Kutubxonalar
+      - name: Tekshiruv
         run: |
-          sudo apt-get install -y -qq libx11-6 libxi6 libxxf86vm1 libxfixes3 \
-            libxrender1 libgl1 libegl1 libsm6 libice6 libglib2.0-0 ffmpeg fonts-dejavu-core
+          ffmpeg -version | head -1 || echo "ffmpeg yo'q"
+          ~/blender/blender --version | head -1
 
       - name: Render (shot ${{ matrix.task.shot }} kadr ${{ matrix.task.fs }}-${{ matrix.task.fe }})
         run: |
@@ -119,6 +123,7 @@ jobs:
   compose:
     needs: [plan, render]
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
@@ -128,8 +133,9 @@ jobs:
 
       - name: Kutubxonalar
         run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq ffmpeg fonts-dejavu-core
+          timeout 180 sudo apt-get update -qq || true
+          (ffmpeg -version >/dev/null && echo "ffmpeg bor") || timeout 240 sudo apt-get install -y -qq ffmpeg
+          timeout 120 sudo apt-get install -y -qq fonts-dejavu-core || true
 
       - name: Montaj
         run: |
