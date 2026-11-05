@@ -293,12 +293,12 @@ def make_far_trees(coll, count=26, radius=30, seed=9, dry=False):
         h = rnd.uniform(2.4, 4.2)
         x, y = math.cos(a) * d, math.sin(a) * d
         bm = bmesh.new()
-        _taper_segment(bm, (0, 0, 0), (0, 0, h * 0.55), 0.11, 0.07, 6)
+        _taper_segment(bm, (0, 0, 0), (0, 0, h * 0.50), 0.16, 0.10, 6)
         ob = _obj_from_bm(bm, f"ft{i}", coll, mtr)
         ob.location = (x, y, 0)
-        bm2 = blob(h * 0.20, subdiv=1, irregular=0.35, seed=i, squash=(1, 1, 1.15))
+        bm2 = blob(h * 0.27, subdiv=2, irregular=0.45, seed=i, squash=(1.15, 1.1, 0.95))
         ob2 = _obj_from_bm(bm2, f"fl{i}", coll, m)
-        ob2.location = (x, y, h * 0.66)
+        ob2.location = (x, y, h * 0.68)
         out += [ob, ob2]
     return out
 

@@ -10,7 +10,7 @@ from mathutils import Vector
 
 
 def dust_motes(coll, count=70, area=(14, 14, 6), center=(0, 0, 2.0), seed=4,
-               color=(1.0, 0.88, 0.62), strength=6.0, size=0.028):
+               color=(1.0, 0.86, 0.58), strength=3.0, size=0.011):
     rnd = random.Random(seed)
     m = bpy.data.materials.new("dust")
     m.use_nodes = True

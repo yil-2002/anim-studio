@@ -65,7 +65,7 @@ def build(plan, shot, outdir, samples=6, preview=None, quality=None, gpu=False,
         NA.make_grass_tufts(c_env, count=int(shot.get("grass", 240) * q),
                             radius=shot.get("grass_radius", 15), seed=seed)
     NA.make_hills(c_env, count=max(3, int(6 * q)), radius=46, seed=seed + 1)
-    NA.make_far_trees(c_env, count=int(shot.get("far_trees", 26) * q), radius=32,
+    NA.make_far_trees(c_env, count=int(shot.get("far_trees", 40) * q), radius=34,
                       seed=seed + 2, dry=dry)
     NA.make_clouds(c_env, count=int(shot.get("clouds", 7) * q), seed=seed + 3)
     NA.make_sun(c_env, direction=sun_dir, size=shot.get("sun_size", 6.0))
@@ -75,14 +75,18 @@ def build(plan, shot, outdir, samples=6, preview=None, quality=None, gpu=False,
     layout = shot.get("trees")
     if env in ("orchard", "orchard_dry", "dry"):
         if layout is None:
+            # kamera -Y tomondan +Y ga qaraydi: daraxtlarni shu yo'nalishda kamar qilib qo'yamiz
             layout = []
-            n = max(2, int(shot.get("tree_count", 8) * q))
+            n = max(2, int(shot.get("tree_count", 9) * q))
             for i in range(n):
-                a = rnd.uniform(0, math.tau)
-                d = rnd.uniform(4.5, 14.0)
-                layout.append({"pos": [math.cos(a) * d, math.sin(a) * d + 4.0, 0],
-                               "h": rnd.uniform(2.9, 4.0),
-                               "fruit": 0 if dry else rnd.randint(3, 9),
+                t = (i + 0.5) / n
+                a = math.pi * (0.08 + 0.84 * t) + rnd.uniform(-0.12, 0.12)   # 0..pi yoy
+                d = rnd.uniform(7.5, 17.0)
+                x = math.cos(a) * d
+                y = 3.5 + math.sin(a) * d * 0.55 + rnd.uniform(0, 2.5)
+                layout.append({"pos": [x, y, 0],
+                               "h": rnd.uniform(3.0, 4.3),
+                               "fruit": 0 if dry else rnd.randint(4, 12),
                                "dry": dry})
     for i, t in enumerate(layout):
         tr = NA.make_tree(c_env, name=f"T{i}", loc=t.get("pos", [0, 0, 0]),

@@ -15,9 +15,9 @@ PALETTE = {
     "sky_horizon":  (0.980, 0.760, 0.420),
     "sun":          (1.000, 0.880, 0.620),
     "fog":          (0.560, 0.520, 0.330),
-    "ground":       (0.240, 0.215, 0.105),
+    "ground":       (0.170, 0.165, 0.075),
     "ground_dark":  (0.110, 0.125, 0.065),
-    "grass":        (0.185, 0.265, 0.085),
+    "grass":        (0.150, 0.230, 0.070),
     "trunk":        (0.115, 0.072, 0.042),
     "leaf_a":       (0.038, 0.135, 0.062),
     "leaf_b":       (0.155, 0.310, 0.105),
@@ -87,7 +87,7 @@ def mat(name, color, rough=0.85, spec=0.25, emit=0.0, noise_scale=0.0,
 # OSMON / WORLD — ekran bo'ylab vertikal gradient + quyosh nuri
 # ----------------------------------------------------------------------------
 def setup_world(scene, sun_dir=(0.35, -1.0, 0.22), warmth=1.0, horizon=None, top=None,
-                strength=0.55):
+                strength=0.42):
     """Ekran emas, KO'RISH YO'NALISHI bo'yicha gradient — har qanday kamerada to'g'ri."""
     w = bpy.data.worlds.new("SKY")
     scene.world = w
@@ -104,23 +104,23 @@ def setup_world(scene, sun_dir=(0.35, -1.0, 0.22), warmth=1.0, horizon=None, top
     nt.links.new(geo.outputs["Incoming"], sep.inputs["Vector"])
 
     mr = nt.nodes.new("ShaderNodeMapRange")
-    mr.inputs["From Min"].default_value = -0.08
-    mr.inputs["From Max"].default_value = 0.62
+    mr.inputs["From Min"].default_value = -0.03
+    mr.inputs["From Max"].default_value = 0.34
     mr.clamp = True
     nt.links.new(sep.outputs["Z"], mr.inputs["Value"])
 
     ramp = nt.nodes.new("ShaderNodeValToRGB")
     cr = ramp.color_ramp
     cr.interpolation = 'EASE'
-    top_c = top or (0.030, 0.115, 0.145)
+    top_c = top or (0.018, 0.085, 0.115)
     hor_c = horizon or (1.000, 0.640, 0.290)
     cr.elements[0].position = 0.00
     cr.elements[0].color = (*hor_c, 1)
     cr.elements[1].position = 1.00
     cr.elements[1].color = (*top_c, 1)
-    for pos, col in ((0.10, (0.98, 0.470, 0.190)),
-                     (0.26, (0.62, 0.430, 0.290)),
-                     (0.46, (0.170, 0.290, 0.280))):
+    for pos, col in ((0.16, (0.99, 0.520, 0.210)),
+                     (0.34, (0.42, 0.360, 0.250)),
+                     (0.55, (0.075, 0.215, 0.235))):
         e = cr.elements.new(pos)
         e.color = (*col, 1)
     nt.links.new(mr.outputs["Result"], ramp.inputs["Fac"])
@@ -156,8 +156,9 @@ def setup_lights(sun_dir=(0.35, -1.0, 0.22), energy=5.5, warm=1.0):
     d = Vector(sun_dir).normalized()
     ld = bpy.data.lights.new("SUN", type='SUN')
     ld.energy = energy
+    ld.use_shadow = True
     ld.angle = math.radians(1.5)
-    ld.color = (1.0, 0.80 * warm, 0.55)
+    ld.color = (1.0, 0.78 * warm, 0.50)
     sun = bpy.data.objects.new("SUN", ld)
     bpy.context.collection.objects.link(sun)
     sun.location = d * 20
@@ -165,7 +166,7 @@ def setup_lights(sun_dir=(0.35, -1.0, 0.22), energy=5.5, warm=1.0):
 
     # sovuq to'ldiruvchi (osmondan aks) — soyalarni o'lik qora bo'lishdan saqlaydi
     ld2 = bpy.data.lights.new("FILL", type='AREA')
-    ld2.energy = 55.0
+    ld2.energy = 22.0
     ld2.size = 14.0
     ld2.color = (0.55, 0.75, 0.85)
     fill = bpy.data.objects.new("FILL", ld2)
