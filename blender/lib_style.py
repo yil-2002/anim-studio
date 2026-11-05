@@ -146,6 +146,10 @@ def setup_render(scene, res=(720, 1280), samples=4, fps=24, mist=True,
     r.image_settings.compression = 40
     r.film_transparent = False
     r.threads_mode = 'AUTO'
+    try:
+        r.compositor_device = 'CPU'      # GPU kontekst (libEGL) kerak bo'lmasin
+    except (AttributeError, TypeError):
+        pass
 
     scene.cycles.device = 'CPU'
     scene.cycles.samples = samples
