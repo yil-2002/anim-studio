@@ -43,7 +43,7 @@ def build(plan, shot, outdir, samples=6, preview=None, quality=None, gpu=False,
         sc.cycles.denoising_input_passes = 'RGB_ALBEDO_NORMAL'
         print("DENOISE: OIDN", flush=True)
 
-    sun_dir = shot.get("sun_dir", [0.45, 0.85, 0.16])
+    sun_dir = shot.get("sun_dir", [0.92, 0.42, 0.20])
     ST.setup_world(sc, sun_dir=sun_dir,
                    horizon=shot.get("sky_horizon"),
                    top=shot.get("sky_top"))
@@ -72,7 +72,7 @@ def build(plan, shot, outdir, samples=6, preview=None, quality=None, gpu=False,
     print("STAGE: far trees ok", flush=True)
     NA.make_clouds(c_env, count=int(shot.get("clouds", 7) * q), seed=seed + 3)
     print("STAGE: clouds ok", flush=True)
-    NA.make_sun(c_env, direction=sun_dir, size=shot.get("sun_size", 6.0))
+    NA.make_sun(c_env, direction=sun_dir, size=shot.get("sun_size", 3.0))
     print("STAGE: sun ok", flush=True)
     if shot.get("skydome", True):
         NA.make_sky_dome(c_env, horizon=shot.get("sky_horizon"),

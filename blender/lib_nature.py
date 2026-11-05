@@ -329,7 +329,7 @@ def make_sun(coll, direction=(0.35, -1.0, 0.22), distance=70, size=5.0):
     out = nt.nodes.new("ShaderNodeOutputMaterial")
     em = nt.nodes.new("ShaderNodeEmission")
     em.inputs["Color"].default_value = (1.0, 0.92, 0.72, 1)
-    em.inputs["Strength"].default_value = 22.0
+    em.inputs["Strength"].default_value = 9.0
     nt.links.new(em.outputs["Emission"], out.inputs["Surface"])
     bm = bmesh.new()
     bmesh.ops.create_uvsphere(bm, u_segments=24, v_segments=12, radius=size)
@@ -360,7 +360,7 @@ def make_water(coll, y=8, width=60, length=60, z=-0.35):
 
 def make_sky_dome(coll, radius=220, horizon=(1.00, 0.60, 0.26),
                   zenith=(0.016, 0.080, 0.110), mid=(0.055, 0.190, 0.215),
-                  strength=1.9, sun_dir=(0.45, 0.85, 0.16)):
+                  strength=2.1, sun_dir=(0.92, 0.42, 0.20)):
     """Osmon gumbazi: haqiqiy geometriya + emission gradient.
     World node'lariga bog'liq emas — har qanday kamerada bir xil chiqadi."""
     import bmesh

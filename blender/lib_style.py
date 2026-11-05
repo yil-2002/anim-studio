@@ -86,7 +86,7 @@ def mat(name, color, rough=0.85, spec=0.25, emit=0.0, noise_scale=0.0,
 # ----------------------------------------------------------------------------
 # OSMON / WORLD — ekran bo'ylab vertikal gradient + quyosh nuri
 # ----------------------------------------------------------------------------
-def setup_world(scene, sun_dir=(0.45, 0.85, 0.16), warmth=1.0, horizon=None, top=None,
+def setup_world(scene, sun_dir=(0.92, 0.42, 0.20), warmth=1.0, horizon=None, top=None,
                 strength=0.95):
     """Ekran emas, KO'RISH YO'NALISHI bo'yicha gradient — har qanday kamerada to'g'ri."""
     w = bpy.data.worlds.new("SKY")
@@ -153,7 +153,7 @@ def setup_world(scene, sun_dir=(0.45, 0.85, 0.16), warmth=1.0, horizon=None, top
 # ----------------------------------------------------------------------------
 # YORUG'LIK
 # ----------------------------------------------------------------------------
-def setup_lights(sun_dir=(0.45, 0.85, 0.16), energy=7.0, warm=1.0):
+def setup_lights(sun_dir=(0.92, 0.42, 0.20), energy=6.0, warm=1.0):
     d = Vector(sun_dir).normalized()
     ld = bpy.data.lights.new("SUN", type='SUN')
     ld.energy = energy
@@ -167,7 +167,7 @@ def setup_lights(sun_dir=(0.45, 0.85, 0.16), energy=7.0, warm=1.0):
 
     # sovuq to'ldiruvchi (osmondan aks) — soyalarni o'lik qora bo'lishdan saqlaydi
     ld2 = bpy.data.lights.new("FILL", type='AREA')
-    ld2.energy = 22.0
+    ld2.energy = 45.0
     ld2.size = 14.0
     ld2.color = (0.55, 0.75, 0.85)
     fill = bpy.data.objects.new("FILL", ld2)
@@ -184,7 +184,7 @@ def setup_lights(sun_dir=(0.45, 0.85, 0.16), energy=7.0, warm=1.0):
 # RENDER SOZLAMALARI
 # ----------------------------------------------------------------------------
 def setup_render(scene, res=(720, 1280), samples=4, fps=24, mist=True,
-                 view_transform='AgX', exposure=0.15):
+                 view_transform='AgX', exposure=0.55):
     r = scene.render
     r.resolution_x, r.resolution_y = res
     r.resolution_percentage = 100
@@ -238,9 +238,9 @@ def setup_render(scene, res=(720, 1280), samples=4, fps=24, mist=True,
     gl = nt.nodes.new("CompositorNodeGlare")
     gl.glare_type = 'FOG_GLOW'
     gl.quality = 'MEDIUM'
-    gl.threshold = 1.15
-    gl.size = 6
-    gl.mix = -0.35
+    gl.threshold = 2.2
+    gl.size = 5
+    gl.mix = -0.55
     comp = nt.nodes.new("CompositorNodeComposite")
     nt.links.new(rl.outputs["Image"], gl.inputs["Image"])
     nt.links.new(gl.outputs["Image"], comp.inputs["Image"])
