@@ -43,7 +43,7 @@ def build(plan, shot, outdir, samples=6, preview=None, quality=None, gpu=False,
         sc.cycles.denoising_input_passes = 'RGB_ALBEDO_NORMAL'
         print("DENOISE: OIDN", flush=True)
 
-    sun_dir = shot.get("sun_dir", [0.35, -1.0, 0.24])
+    sun_dir = shot.get("sun_dir", [0.45, 0.85, 0.16])
     ST.setup_world(sc, sun_dir=sun_dir,
                    horizon=shot.get("sky_horizon"),
                    top=shot.get("sky_top"))
@@ -64,7 +64,7 @@ def build(plan, shot, outdir, samples=6, preview=None, quality=None, gpu=False,
     NA.make_ground(c_env, size=340, dry=dry)
     print("STAGE: ground ok", flush=True)
     if not dry:
-        NA.make_grass_tufts(c_env, count=int(shot.get("grass", 240) * q),
+        NA.make_grass_tufts(c_env, count=int(shot.get("grass", 420) * q),
                             radius=shot.get("grass_radius", 22), seed=seed)
     NA.make_hills(c_env, count=max(3, int(6 * q)), radius=46, seed=seed + 1)
     NA.make_far_trees(c_env, count=int(shot.get("far_trees", 40) * q), radius=34,

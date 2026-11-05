@@ -23,7 +23,7 @@ PALETTE = {
     "leaf_b":       (0.155, 0.310, 0.105),
     "leaf_dry":     (0.300, 0.235, 0.095),
     "fruit":        (0.520, 0.038, 0.052),
-    "robe":         (0.800, 0.775, 0.700),
+    "robe":         (0.720, 0.690, 0.610),
     "turban":       (0.880, 0.865, 0.800),
     "skin":         (0.700, 0.500, 0.360),
     "dirt":         (0.260, 0.190, 0.110),
@@ -86,7 +86,7 @@ def mat(name, color, rough=0.85, spec=0.25, emit=0.0, noise_scale=0.0,
 # ----------------------------------------------------------------------------
 # OSMON / WORLD — ekran bo'ylab vertikal gradient + quyosh nuri
 # ----------------------------------------------------------------------------
-def setup_world(scene, sun_dir=(0.35, -1.0, 0.22), warmth=1.0, horizon=None, top=None,
+def setup_world(scene, sun_dir=(0.45, 0.85, 0.16), warmth=1.0, horizon=None, top=None,
                 strength=0.95):
     """Ekran emas, KO'RISH YO'NALISHI bo'yicha gradient — har qanday kamerada to'g'ri."""
     w = bpy.data.worlds.new("SKY")
@@ -153,7 +153,7 @@ def setup_world(scene, sun_dir=(0.35, -1.0, 0.22), warmth=1.0, horizon=None, top
 # ----------------------------------------------------------------------------
 # YORUG'LIK
 # ----------------------------------------------------------------------------
-def setup_lights(sun_dir=(0.35, -1.0, 0.22), energy=5.5, warm=1.0):
+def setup_lights(sun_dir=(0.45, 0.85, 0.16), energy=7.0, warm=1.0):
     d = Vector(sun_dir).normalized()
     ld = bpy.data.lights.new("SUN", type='SUN')
     ld.energy = energy

@@ -107,7 +107,7 @@ def make_ground(coll, name="Ground", size=300, dry=False, color=None):
             v.co.z += noise.noise(Vector((v.co.x * 0.5, v.co.y * 0.5, 2.0))) * 0.05
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
     c1 = color or (PALETTE["dirt"] if dry else PALETTE["ground"])
-    c2 = (0.395, 0.345, 0.170) if not dry else (0.330, 0.255, 0.150)
+    c2 = (0.290, 0.250, 0.120) if not dry else (0.300, 0.225, 0.130)
     m = mat(f"ground_{name}", c1, rough=0.96, spec=0.04,
             noise_scale=2.6, noise_amount=0.22, second=c2)
     return _obj_from_bm(bm, name, coll, m)
@@ -122,7 +122,7 @@ def make_grass_tufts(coll, count=260, radius=16, height=0.30, color=None, seed=1
         r = radius * math.sqrt(rnd.random())
         x, y = math.cos(a) * r, math.sin(a) * r
         z = noise.noise(Vector((x * 0.06, y * 0.06, 0.3))) * 0.55
-        h = height * rnd.uniform(0.6, 1.5)
+        h = height * rnd.uniform(0.5, 1.2)
         w = h * 0.10
         n_blades = rnd.randint(2, 3)
         for b in range(n_blades):
@@ -360,7 +360,7 @@ def make_water(coll, y=8, width=60, length=60, z=-0.35):
 
 def make_sky_dome(coll, radius=220, horizon=(1.00, 0.60, 0.26),
                   zenith=(0.016, 0.080, 0.110), mid=(0.055, 0.190, 0.215),
-                  strength=1.35, sun_dir=(0.35, -1.0, 0.24)):
+                  strength=1.9, sun_dir=(0.45, 0.85, 0.16)):
     """Osmon gumbazi: haqiqiy geometriya + emission gradient.
     World node'lariga bog'liq emas — har qanday kamerada bir xil chiqadi."""
     import bmesh
@@ -396,8 +396,8 @@ def make_sky_dome(coll, radius=220, horizon=(1.00, 0.60, 0.26),
 
     tc = nt.nodes.new("ShaderNodeTexCoord")
     mr = nt.nodes.new("ShaderNodeMapRange")
-    mr.inputs["From Min"].default_value = 0.0
-    mr.inputs["From Max"].default_value = 0.30
+    mr.inputs["From Min"].default_value = -0.02
+    mr.inputs["From Max"].default_value = 0.28
     mr.clamp = True
     sepxyz = nt.nodes.new("ShaderNodeSeparateXYZ")
     nt.links.new(tc.outputs["Object"], sepxyz.inputs["Vector"])
