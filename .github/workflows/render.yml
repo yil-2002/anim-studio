@@ -31,11 +31,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - id: read
-        run: |
-          PLAN="${{ github.event.inputs.plan || 'scenes/demo.json' }}"
-          echo "count=$(python3 -c "import json;print(json.dumps(list(range(len(json.load(open('$PLAN'))['shots']))))))" >> $GITHUB_OUTPUT
-          echo "fps=$(python3 -c "import json;print(json.load(open('$PLAN')).get('fps',24))")" >> $GITHUB_OUTPUT
-          echo "PLAN=$PLAN" >> $GITHUB_ENV
+        env:
+          PLAN: ${{ github.event.inputs.plan || 'scenes/demo.json' }}
+        run: python3 src/plan_info.py >> $GITHUB_OUTPUT
 
   render:
     needs: plan
