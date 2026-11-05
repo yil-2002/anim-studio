@@ -96,7 +96,7 @@ jobs:
             --samples ${{ github.event.inputs.samples || 48 }} \
             --quality ${{ github.event.inputs.quality || 1.0 }} \
             --res ${{ github.event.inputs.res || '720x1280' }} \
-            --denoise $EXTRA 2>&1 | grep -E "DENOISE|Time:|Saved|Error|GPU" | tail -25
+            --denoise $EXTRA 2>&1 | tail -60
           echo "END $(date +%T)"
           if [ "${{ github.event.inputs.preview }}" = "1" ]; then
             echo "PREVIEW rejimi: 1 kadr"
