@@ -27,6 +27,10 @@ on:
         description: "Bir jobdagi kadrlar soni (kichikroq = ko'proq parallel)"
         default: "28"
         required: true
+      denoise:
+        description: "1 = OIDN denoise, 0 = o'chirilgan"
+        default: "1"
+        required: true
 
 env:
   BLENDER_VER: "4.3.2"
@@ -89,6 +93,7 @@ jobs:
           mkdir -p frames
           EXTRA=""
           if [ "${{ github.event.inputs.preview }}" = "1" ]; then EXTRA="--preview 1"; fi
+          if [ "${{ github.event.inputs.denoise }}" != "0" ]; then EXTRA="$EXTRA --denoise"; fi
           echo "START $(date +%T)"
           time ~/blender/blender -b -P blender/build_scene.py -- \
             --plan "$PLAN" --shot ${{ matrix.task.shot }} --outdir frames \
@@ -96,7 +101,7 @@ jobs:
             --samples ${{ github.event.inputs.samples || 48 }} \
             --quality ${{ github.event.inputs.quality || 1.0 }} \
             --res ${{ github.event.inputs.res || '720x1280' }} \
-            --denoise $EXTRA 2>&1 | tail -100
+            $EXTRA 2>&1 | tail -100
           echo "BLENDER_EXIT=${PIPESTATUS[0]}"
           echo "END $(date +%T)"
           if [ "${{ github.event.inputs.preview }}" = "1" ]; then
