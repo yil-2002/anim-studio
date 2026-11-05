@@ -82,7 +82,7 @@ jobs:
           tar -xf /tmp/b.tar.xz -C ~/blender --strip-components=1
           ~/blender/blender --version | head -1
 
-      - name: Kutubxonalar (apt'siz: deb ajratib olish)
+      - name: Kutubxonalar EGL (deb ajratish, apt kerak emas)
         run: |
           set -e
           mkdir -p ~/libs
