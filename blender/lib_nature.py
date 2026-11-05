@@ -366,6 +366,9 @@ def make_sky_dome(coll, radius=220, horizon=(1.00, 0.60, 0.26),
     import bmesh
     from mathutils import Vector as _V
 
+    horizon = horizon or (1.00, 0.60, 0.26)
+    zenith = zenith or (0.016, 0.080, 0.110)
+    mid = mid or (0.055, 0.190, 0.215)
     bm = bmesh.new()
     bmesh.ops.create_uvsphere(bm, u_segments=40, v_segments=20, radius=radius)
     bmesh.ops.reverse_faces(bm, faces=bm.faces)
