@@ -82,6 +82,23 @@ jobs:
           tar -xf /tmp/b.tar.xz -C ~/blender --strip-components=1
           ~/blender/blender --version | head -1
 
+      - name: Kutubxonalar (apt'siz: deb ajratib olish)
+        run: |
+          set -e
+          mkdir -p ~/libs
+          if [ ! -e ~/libs/usr/lib/x86_64-linux-gnu/libEGL.so.1 ]; then
+            POOL=http://archive.ubuntu.com/ubuntu/pool/main/libg/libglvnd
+            cd /tmp
+            for pkg in libegl1 libglvnd0 libglx0; do
+              f=$(curl -s $POOL/ | grep -o "${pkg}_[^\"]*_amd64.deb" | sort -V | tail -1)
+              echo "yuklanadi: $f"
+              curl -fsSL "$POOL/$f" -o "$pkg.deb"
+              dpkg -x "$pkg.deb" ~/libs
+            done
+          fi
+          ls ~/libs/usr/lib/x86_64-linux-gnu/ | head
+          echo "LD_LIBRARY_PATH=$HOME/libs/usr/lib/x86_64-linux-gnu" >> $GITHUB_ENV
+
       - name: ffmpeg (statik)
         run: |
           mkdir -p ~/bin
