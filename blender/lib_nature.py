@@ -268,7 +268,7 @@ def add_wind(tree, strength=0.035, seed=0):
 # ============================================================================
 def make_hills(coll, count=5, radius=72, seed=5):
     rnd = random.Random(seed)
-    m = mat("hill", (0.10, 0.155, 0.140), rough=1.0, spec=0.0, emit=0.25)
+    m = mat("hill", (0.10, 0.155, 0.140), rough=1.0, spec=0.0, emit=0.0)
     out = []
     for i in range(count):
         a = math.pi * (0.08 + 0.84 * i / max(1, count - 1))
@@ -305,7 +305,7 @@ def make_far_trees(coll, count=26, radius=30, seed=9, dry=False):
 
 def make_clouds(coll, count=7, seed=3, height=16, radius=40):
     rnd = random.Random(seed)
-    m = mat("cloud", (0.98, 0.86, 0.66), rough=1.0, spec=0.0, emit=1.6)
+    m = mat("cloud", (0.98, 0.86, 0.66), rough=1.0, spec=0.0, emit=0.9)
     out = []
     for i in range(count):
         a = math.pi * rnd.uniform(0.05, 0.95)
