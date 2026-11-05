@@ -96,7 +96,8 @@ jobs:
             --samples ${{ github.event.inputs.samples || 48 }} \
             --quality ${{ github.event.inputs.quality || 1.0 }} \
             --res ${{ github.event.inputs.res || '720x1280' }} \
-            --denoise $EXTRA 2>&1 | tail -60
+            --denoise $EXTRA 2>&1 | tail -100
+          echo "BLENDER_EXIT=${PIPESTATUS[0]}"
           echo "END $(date +%T)"
           if [ "${{ github.event.inputs.preview }}" = "1" ]; then
             echo "PREVIEW rejimi: 1 kadr"
