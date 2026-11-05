@@ -59,18 +59,24 @@ def build(plan, shot, outdir, samples=6, preview=None, quality=None, gpu=False,
     seed = shot.get("seed", 1)
     rnd = random.Random(seed)
 
+    print("STAGE: env start", flush=True)
     # ---------------- YER / FON ----------------
     NA.make_ground(c_env, size=90, dry=dry)
+    print("STAGE: ground ok", flush=True)
     if not dry:
         NA.make_grass_tufts(c_env, count=int(shot.get("grass", 240) * q),
                             radius=shot.get("grass_radius", 15), seed=seed)
     NA.make_hills(c_env, count=max(3, int(6 * q)), radius=46, seed=seed + 1)
     NA.make_far_trees(c_env, count=int(shot.get("far_trees", 40) * q), radius=34,
                       seed=seed + 2, dry=dry)
+    print("STAGE: far trees ok", flush=True)
     NA.make_clouds(c_env, count=int(shot.get("clouds", 7) * q), seed=seed + 3)
+    print("STAGE: clouds ok", flush=True)
     NA.make_sun(c_env, direction=sun_dir, size=shot.get("sun_size", 6.0))
+    print("STAGE: sun ok", flush=True)
     NA.make_sky_dome(c_env, horizon=shot.get("sky_horizon"),
                      zenith=shot.get("sky_top"), sun_dir=sun_dir)
+    print("STAGE: skydome ok", flush=True)
 
     # ---------------- DARAXTLAR ----------------
     trees = []
@@ -100,6 +106,7 @@ def build(plan, shot, outdir, samples=6, preview=None, quality=None, gpu=False,
         NA.add_wind(tr, strength=t.get("wind", 0.030), seed=i)
         trees.append(tr)
 
+    print("STAGE: trees ok", flush=True)
     # ---------------- ODAM ----------------
     man = None
     act = shot.get("actor")
@@ -131,6 +138,7 @@ def build(plan, shot, outdir, samples=6, preview=None, quality=None, gpu=False,
     if shot.get("leaves", False):
         FX.falling_leaves(c_fx, count=shot.get("leaf_count", 12), seed=seed + 11)
 
+    print("STAGE: actor+fx ok", flush=True)
     # ---------------- KAMERA ----------------
     cam = CAm.make_camera(c_cam, sc)
     dur_f = int(round(shot["dur"] * fps))
