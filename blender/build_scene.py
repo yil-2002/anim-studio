@@ -61,11 +61,11 @@ def build(plan, shot, outdir, samples=6, preview=None, quality=None, gpu=False,
 
     print("STAGE: env start", flush=True)
     # ---------------- YER / FON ----------------
-    NA.make_ground(c_env, size=90, dry=dry)
+    NA.make_ground(c_env, size=340, dry=dry)
     print("STAGE: ground ok", flush=True)
     if not dry:
         NA.make_grass_tufts(c_env, count=int(shot.get("grass", 240) * q),
-                            radius=shot.get("grass_radius", 15), seed=seed)
+                            radius=shot.get("grass_radius", 22), seed=seed)
     NA.make_hills(c_env, count=max(3, int(6 * q)), radius=46, seed=seed + 1)
     NA.make_far_trees(c_env, count=int(shot.get("far_trees", 40) * q), radius=34,
                       seed=seed + 2, dry=dry)

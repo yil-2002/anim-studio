@@ -97,9 +97,9 @@ def _taper_segment(bm, p0, p1, r0, r1, segs=8):
 # ============================================================================
 # YER
 # ============================================================================
-def make_ground(coll, name="Ground", size=90, dry=False, color=None):
+def make_ground(coll, name="Ground", size=300, dry=False, color=None):
     bm = bmesh.new()
-    bmesh.ops.create_grid(bm, x_segments=40, y_segments=40, size=size / 2)
+    bmesh.ops.create_grid(bm, x_segments=48, y_segments=48, size=size / 2)
     for v in bm.verts:
         d = math.hypot(v.co.x, v.co.y)
         v.co.z = noise.noise(Vector((v.co.x * 0.06, v.co.y * 0.06, 0.3))) * 0.55
@@ -108,8 +108,8 @@ def make_ground(coll, name="Ground", size=90, dry=False, color=None):
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
     c1 = color or (PALETTE["dirt"] if dry else PALETTE["ground"])
     c2 = (0.395, 0.345, 0.170) if not dry else (0.330, 0.255, 0.150)
-    m = mat(f"ground_{name}", c1, rough=0.95, spec=0.06,
-            noise_scale=0.55, noise_amount=0.30, second=c2)
+    m = mat(f"ground_{name}", c1, rough=0.96, spec=0.04,
+            noise_scale=2.6, noise_amount=0.22, second=c2)
     return _obj_from_bm(bm, name, coll, m)
 
 
@@ -156,8 +156,8 @@ def make_tree(coll, name="Tree", loc=(0, 0, 0), height=3.2, canopy=1.0,
     # --- tana (2-3 bo'g'in, yengil qayrilgan) ---
     base = Vector(loc)
     p = base.copy()
-    trunk_h = height * 0.42
-    rad = height * 0.055
+    trunk_h = height * 0.36
+    rad = height * 0.075
     lean = Vector((rnd.uniform(-1, 1), rnd.uniform(-1, 1), 0)) * height * 0.07
     n_seg = 3
     for i in range(n_seg):
@@ -215,12 +215,12 @@ def make_tree(coll, name="Tree", loc=(0, 0, 0), height=3.2, canopy=1.0,
             c = p + Vector((rnd.uniform(-1, 1) * canopy * 0.7,
                             rnd.uniform(-1, 1) * canopy * 0.7,
                             rnd.uniform(0, 1) * canopy * 0.5))
-        r = canopy * rnd.uniform(0.42, 0.78) * (height * 0.19)
+        r = canopy * rnd.uniform(0.50, 0.92) * (height * 0.21)
         bsub = 2 if subdiv >= 2 else 1
         bm = blob(r, subdiv=bsub, irregular=0.55, seed=seed * 31 + i,
                   squash=(1.15, 1.1, 0.78))
-        pos = c + Vector((rnd.uniform(-0.34, 0.34), rnd.uniform(-0.34, 0.34),
-                          rnd.uniform(-0.26, 0.30)))
+        pos = c + Vector((rnd.uniform(-0.42, 0.42), rnd.uniform(-0.42, 0.42),
+                          rnd.uniform(-0.40, 0.22)))
         _merge_bm(canopy_bm, bm, offset=pos - Vector(loc))
         canopy_centers.append(pos)
     bmesh.ops.recalc_face_normals(canopy_bm, faces=canopy_bm.faces)
@@ -421,7 +421,7 @@ def make_sky_dome(coll, radius=220, horizon=(1.00, 0.60, 0.26),
     geo = nt.nodes.new("ShaderNodeNewGeometry")
     dot = nt.nodes.new("ShaderNodeVectorMath")
     dot.operation = 'DOT_PRODUCT'
-    dot.inputs[1].default_value = _V(sun_dir).normalized()
+    dot.inputs[1].default_value = -_V(sun_dir).normalized()   # Incoming teskari
     nt.links.new(geo.outputs["Incoming"], dot.inputs[0])
     mr2 = nt.nodes.new("ShaderNodeMapRange")
     mr2.inputs["From Min"].default_value = 0.90
