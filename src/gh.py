@@ -95,7 +95,7 @@ def cmd_push(a):
     run("git add -A")
     run(f'git commit -q -m "{a.msg}" || echo "(o\'zgarish yo\'q)"')
     run(f"git remote remove origin 2>/dev/null; git remote add origin {url}")
-    r = run("git push -u origin main --force 2>&1 | tail -3")
+    r = run("git push -u origin main --force")
     if r.returncode != 0:
         sys.exit("Push muvaffaqiyatsiz")
     # tokenni .git/config dan olib tashlash
