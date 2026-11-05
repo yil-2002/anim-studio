@@ -107,9 +107,9 @@ def make_ground(coll, name="Ground", size=90, dry=False, color=None):
             v.co.z += noise.noise(Vector((v.co.x * 0.5, v.co.y * 0.5, 2.0))) * 0.05
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
     c1 = color or (PALETTE["dirt"] if dry else PALETTE["ground"])
-    c2 = (0.60, 0.52, 0.30) if not dry else (0.42, 0.33, 0.20)
+    c2 = (0.395, 0.345, 0.170) if not dry else (0.330, 0.255, 0.150)
     m = mat(f"ground_{name}", c1, rough=0.95, spec=0.06,
-            noise_scale=2.2, noise_amount=0.55, second=c2)
+            noise_scale=0.55, noise_amount=0.30, second=c2)
     return _obj_from_bm(bm, name, coll, m)
 
 
@@ -198,10 +198,10 @@ def make_tree(coll, name="Tree", loc=(0, 0, 0), height=3.2, canopy=1.0,
     # --- barg to'plari ---
     if dry:
         leaf_col, leaf_col2 = PALETTE["leaf_dry"], (0.50, 0.40, 0.18)
-        n_clusters = max(3, len(tips) // 2)
+        n_clusters = max(4, len(tips))
     else:
         leaf_col, leaf_col2 = PALETTE["leaf_a"], PALETTE["leaf_b"]
-        n_clusters = len(tips) + 2
+        n_clusters = int(len(tips) * 1.9) + 3
 
     m_leaf = mat(f"leaf_{name}", leaf_col, rough=0.75, spec=0.15,
                  noise_scale=6.0, noise_amount=0.7, second=leaf_col2)
@@ -215,12 +215,12 @@ def make_tree(coll, name="Tree", loc=(0, 0, 0), height=3.2, canopy=1.0,
             c = p + Vector((rnd.uniform(-1, 1) * canopy * 0.7,
                             rnd.uniform(-1, 1) * canopy * 0.7,
                             rnd.uniform(0, 1) * canopy * 0.5))
-        r = canopy * rnd.uniform(0.62, 1.05) * (height * 0.19)
+        r = canopy * rnd.uniform(0.42, 0.78) * (height * 0.19)
         bsub = 2 if subdiv >= 2 else 1
-        bm = blob(r, subdiv=bsub, irregular=0.38, seed=seed * 31 + i,
-                  squash=(1.05, 1.0, 0.85))
-        pos = c + Vector((rnd.uniform(-0.1, 0.1), rnd.uniform(-0.1, 0.1),
-                          rnd.uniform(-0.1, 0.15)))
+        bm = blob(r, subdiv=bsub, irregular=0.55, seed=seed * 31 + i,
+                  squash=(1.15, 1.1, 0.78))
+        pos = c + Vector((rnd.uniform(-0.34, 0.34), rnd.uniform(-0.34, 0.34),
+                          rnd.uniform(-0.26, 0.30)))
         _merge_bm(canopy_bm, bm, offset=pos - Vector(loc))
         canopy_centers.append(pos)
     bmesh.ops.recalc_face_normals(canopy_bm, faces=canopy_bm.faces)
@@ -242,7 +242,7 @@ def make_tree(coll, name="Tree", loc=(0, 0, 0), height=3.2, canopy=1.0,
             pos = c + Vector((math.cos(ang) * rr, math.sin(ang) * rr,
                               rnd.uniform(-0.55, 0.15) * canopy))
             sb = bmesh.new()
-            bmesh.ops.create_uvsphere(sb, u_segments=8, v_segments=5, radius=fr)
+            bmesh.ops.create_uvsphere(sb, u_segments=14, v_segments=9, radius=fr)
             _merge_bm(fbm, sb, offset=pos - Vector(loc))
         bmesh.ops.recalc_face_normals(fbm, faces=fbm.faces)
         fobj = _obj_from_bm(fbm, f"{name}_fruit", coll, m_fruit)

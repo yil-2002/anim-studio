@@ -15,16 +15,16 @@ PALETTE = {
     "sky_horizon":  (0.980, 0.760, 0.420),
     "sun":          (1.000, 0.880, 0.620),
     "fog":          (0.560, 0.520, 0.330),
-    "ground":       (0.330, 0.300, 0.150),
-    "ground_dark":  (0.150, 0.170, 0.095),
-    "grass":        (0.290, 0.380, 0.135),
-    "trunk":        (0.180, 0.120, 0.075),
-    "leaf_a":       (0.130, 0.290, 0.150),
-    "leaf_b":       (0.290, 0.430, 0.180),
-    "leaf_dry":     (0.360, 0.290, 0.130),
-    "fruit":        (0.640, 0.075, 0.090),
-    "robe":         (0.900, 0.880, 0.820),
-    "turban":       (0.940, 0.930, 0.890),
+    "ground":       (0.240, 0.215, 0.105),
+    "ground_dark":  (0.110, 0.125, 0.065),
+    "grass":        (0.185, 0.265, 0.085),
+    "trunk":        (0.115, 0.072, 0.042),
+    "leaf_a":       (0.038, 0.135, 0.062),
+    "leaf_b":       (0.155, 0.310, 0.105),
+    "leaf_dry":     (0.300, 0.235, 0.095),
+    "fruit":        (0.520, 0.038, 0.052),
+    "robe":         (0.800, 0.775, 0.700),
+    "turban":       (0.880, 0.865, 0.800),
     "skin":         (0.700, 0.500, 0.360),
     "dirt":         (0.260, 0.190, 0.110),
     "water":        (0.070, 0.240, 0.270),
@@ -86,7 +86,9 @@ def mat(name, color, rough=0.85, spec=0.25, emit=0.0, noise_scale=0.0,
 # ----------------------------------------------------------------------------
 # OSMON / WORLD — ekran bo'ylab vertikal gradient + quyosh nuri
 # ----------------------------------------------------------------------------
-def setup_world(scene, sun_dir=(0.35, -1.0, 0.22), warmth=1.0, horizon=None, top=None):
+def setup_world(scene, sun_dir=(0.35, -1.0, 0.22), warmth=1.0, horizon=None, top=None,
+                strength=0.55):
+    """Ekran emas, KO'RISH YO'NALISHI bo'yicha gradient — har qanday kamerada to'g'ri."""
     w = bpy.data.worlds.new("SKY")
     scene.world = w
     w.use_nodes = True
@@ -95,48 +97,54 @@ def setup_world(scene, sun_dir=(0.35, -1.0, 0.22), warmth=1.0, horizon=None, top
 
     out = nt.nodes.new("ShaderNodeOutputWorld")
     bg = nt.nodes.new("ShaderNodeBackground")
-    bg.inputs["Strength"].default_value = 1.0
+    bg.inputs["Strength"].default_value = strength
 
-    tc = nt.nodes.new("ShaderNodeTexCoord")
+    geo = nt.nodes.new("ShaderNodeNewGeometry")
     sep = nt.nodes.new("ShaderNodeSeparateXYZ")
-    nt.links.new(tc.outputs["Window"], sep.inputs["Vector"])
+    nt.links.new(geo.outputs["Incoming"], sep.inputs["Vector"])
+
+    mr = nt.nodes.new("ShaderNodeMapRange")
+    mr.inputs["From Min"].default_value = -0.08
+    mr.inputs["From Max"].default_value = 0.62
+    mr.clamp = True
+    nt.links.new(sep.outputs["Z"], mr.inputs["Value"])
 
     ramp = nt.nodes.new("ShaderNodeValToRGB")
     cr = ramp.color_ramp
     cr.interpolation = 'EASE'
-    top_c = top or PALETTE["sky_top"]
-    hor_c = horizon or PALETTE["sky_horizon"]
-    cr.elements[0].position = 0.30
-    cr.elements[0].color = (*top_c, 1)
-    cr.elements[1].position = 0.72
-    cr.elements[1].color = (*hor_c, 1)
-    e = cr.elements.new(0.52)
-    e.color = (*PALETTE["sky_mid"], 1)
-    e2 = cr.elements.new(0.84)
-    e2.color = (*(hexcol(hor_c) * 0.55), 1)
+    top_c = top or (0.030, 0.115, 0.145)
+    hor_c = horizon or (1.000, 0.640, 0.290)
+    cr.elements[0].position = 0.00
+    cr.elements[0].color = (*hor_c, 1)
+    cr.elements[1].position = 1.00
+    cr.elements[1].color = (*top_c, 1)
+    for pos, col in ((0.10, (0.98, 0.470, 0.190)),
+                     (0.26, (0.62, 0.430, 0.290)),
+                     (0.46, (0.170, 0.290, 0.280))):
+        e = cr.elements.new(pos)
+        e.color = (*col, 1)
+    nt.links.new(mr.outputs["Result"], ramp.inputs["Fac"])
 
-    nt.links.new(sep.outputs["Y"], ramp.inputs["Fac"])
-
-    # quyosh yo'nalishidagi yumshoq yorug'lik dog'i
-    geo = nt.nodes.new("ShaderNodeNewGeometry")
+    # quyosh atrofidagi issiq halo
     dot = nt.nodes.new("ShaderNodeVectorMath")
     dot.operation = 'DOT_PRODUCT'
     dot.inputs[1].default_value = Vector(sun_dir).normalized()
     nt.links.new(geo.outputs["Incoming"], dot.inputs[0])
 
-    mr = nt.nodes.new("ShaderNodeMapRange")
-    mr.inputs["From Min"].default_value = 0.55
-    mr.inputs["From Max"].default_value = 1.0
-    nt.links.new(dot.outputs["Value"], mr.inputs["Value"])
+    mr2 = nt.nodes.new("ShaderNodeMapRange")
+    mr2.inputs["From Min"].default_value = 0.86
+    mr2.inputs["From Max"].default_value = 1.0
+    mr2.inputs["To Max"].default_value = 1.0
+    mr2.clamp = True
+    nt.links.new(dot.outputs["Value"], mr2.inputs["Value"])
 
-    glow = nt.nodes.new("ShaderNodeMixRGB")
-    glow.blend_type = 'ADD'
-    glow.inputs["Fac"].default_value = 0.55 * warmth
-    glow.inputs["Color2"].default_value = (*PALETTE["sun"], 1)
-    nt.links.new(ramp.outputs["Color"], glow.inputs["Color1"])
-    nt.links.new(mr.outputs["Result"], glow.inputs["Fac"])
+    mix = nt.nodes.new("ShaderNodeMixRGB")
+    mix.blend_type = 'ADD'
+    mix.inputs["Color2"].default_value = (1.0, 0.62, 0.26, 1)
+    nt.links.new(ramp.outputs["Color"], mix.inputs["Color1"])
+    nt.links.new(mr2.outputs["Result"], mix.inputs["Fac"])
 
-    nt.links.new(glow.outputs["Color"], bg.inputs["Color"])
+    nt.links.new(mix.outputs["Color"], bg.inputs["Color"])
     nt.links.new(bg.outputs["Background"], out.inputs["Surface"])
     return w
 
@@ -144,16 +152,26 @@ def setup_world(scene, sun_dir=(0.35, -1.0, 0.22), warmth=1.0, horizon=None, top
 # ----------------------------------------------------------------------------
 # YORUG'LIK
 # ----------------------------------------------------------------------------
-def setup_lights(sun_dir=(0.35, -1.0, 0.22), energy=3.4, warm=1.0):
+def setup_lights(sun_dir=(0.35, -1.0, 0.22), energy=5.5, warm=1.0):
     d = Vector(sun_dir).normalized()
-    light_data = bpy.data.lights.new("SUN", type='SUN')
-    light_data.energy = energy
-    light_data.angle = math.radians(6.0)
-    light_data.color = (1.0, 0.86 * warm, 0.66)
-    sun = bpy.data.objects.new("SUN", light_data)
+    ld = bpy.data.lights.new("SUN", type='SUN')
+    ld.energy = energy
+    ld.angle = math.radians(1.5)
+    ld.color = (1.0, 0.80 * warm, 0.55)
+    sun = bpy.data.objects.new("SUN", ld)
     bpy.context.collection.objects.link(sun)
     sun.location = d * 20
     sun.rotation_euler = (-d).to_track_quat('-Z', 'Y').to_euler()
+
+    # sovuq to'ldiruvchi (osmondan aks) — soyalarni o'lik qora bo'lishdan saqlaydi
+    ld2 = bpy.data.lights.new("FILL", type='AREA')
+    ld2.energy = 55.0
+    ld2.size = 14.0
+    ld2.color = (0.55, 0.75, 0.85)
+    fill = bpy.data.objects.new("FILL", ld2)
+    bpy.context.collection.objects.link(fill)
+    fill.location = (-d.x * 12, -d.y * 12, 10)
+    fill.rotation_euler = (Vector((0, 0, 0)) - fill.location).to_track_quat('-Z', 'Y').to_euler()
     return sun
 
 
@@ -161,7 +179,7 @@ def setup_lights(sun_dir=(0.35, -1.0, 0.22), energy=3.4, warm=1.0):
 # RENDER SOZLAMALARI
 # ----------------------------------------------------------------------------
 def setup_render(scene, res=(720, 1280), samples=4, fps=24, mist=True,
-                 view_transform='Standard'):
+                 view_transform='AgX', exposure=0.15):
     r = scene.render
     r.resolution_x, r.resolution_y = res
     r.resolution_percentage = 100
@@ -183,15 +201,21 @@ def setup_render(scene, res=(720, 1280), samples=4, fps=24, mist=True,
     scene.cycles.transparent_max_bounces = 4
     scene.cycles.use_fast_gi = True
     scene.cycles.caustics_reflective = False
-    scene.cycles.caustics_refractive = False 
+    scene.cycles.caustics_refractive = False
+    r.use_persistent_data = True     # BVH kadrlar orasida saqlanadi — 2-3x tez
 
     vs = scene.view_settings
     try:
         vs.view_transform = view_transform
     except TypeError:
         vs.view_transform = 'Filmic'
-    vs.look = 'None'
-    vs.exposure = 0.0
+    for look in ('AgX - Punchy', 'Punchy', 'Medium High Contrast', 'None'):
+        try:
+            vs.look = look
+            break
+        except TypeError:
+            continue
+    vs.exposure = exposure
 
     if mist and scene.world:
         try:
@@ -209,8 +233,9 @@ def setup_render(scene, res=(720, 1280), samples=4, fps=24, mist=True,
     gl = nt.nodes.new("CompositorNodeGlare")
     gl.glare_type = 'FOG_GLOW'
     gl.quality = 'MEDIUM'
-    gl.threshold = 0.85
-    gl.size = 7
+    gl.threshold = 1.15
+    gl.size = 6
+    gl.mix = -0.35
     comp = nt.nodes.new("CompositorNodeComposite")
     nt.links.new(rl.outputs["Image"], gl.inputs["Image"])
     nt.links.new(gl.outputs["Image"], comp.inputs["Image"])

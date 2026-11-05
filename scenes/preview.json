@@ -1,0 +1,45 @@
+{
+ "title": "Anor daraxti — ibratli hikoya (demo)",
+ "fps": 24,
+ "res": [
+  720,
+  1280
+ ],
+ "shots": [
+  {
+   "id": 1,
+   "dur": 4.5,
+   "text": "Har bir berilmagan narsani mahrumlik deb hisoblama.",
+   "env": "orchard",
+   "seed": 11,
+   "tree_count": 9,
+   "actor": {
+    "pose": "walk",
+    "pos": [
+     -2.6,
+     2.6,
+     0
+    ],
+    "walk_to": [
+     2.2,
+     1.2,
+     0
+    ],
+    "steps": 3,
+    "height": 1.78
+   },
+   "cam": {
+    "type": "wide",
+    "move": "push_in",
+    "target": [
+     0,
+     2.2,
+     0
+    ],
+    "azimuth": 90,
+    "amount": 1.0
+   },
+   "dust": true
+  }
+ ]
+}
