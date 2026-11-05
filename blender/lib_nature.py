@@ -266,17 +266,17 @@ def add_wind(tree, strength=0.035, seed=0):
 # ============================================================================
 # FON: tepaliklar, uzoq daraxtlar, bulutlar, quyosh diski
 # ============================================================================
-def make_hills(coll, count=5, radius=45, seed=5):
+def make_hills(coll, count=5, radius=72, seed=5):
     rnd = random.Random(seed)
-    m = mat("hill", (0.30, 0.34, 0.24), rough=1.0, spec=0.0, emit=0.15)
+    m = mat("hill", (0.10, 0.155, 0.140), rough=1.0, spec=0.0, emit=0.25)
     out = []
     for i in range(count):
         a = math.pi * (0.08 + 0.84 * i / max(1, count - 1))
         d = radius * rnd.uniform(0.75, 1.05)
         bm = blob(1.0, subdiv=2, irregular=0.10, seed=i, squash=(1, 1, 1))
         ob = _obj_from_bm(bm, f"hill{i}", coll, m)
-        ob.location = (math.cos(a) * d, math.sin(a) * d, -6 + rnd.uniform(-1, 1))
-        ob.scale = (rnd.uniform(16, 26), rnd.uniform(10, 16), rnd.uniform(7, 12))
+        ob.location = (math.cos(a) * d, math.sin(a) * d, -11 + rnd.uniform(-1, 1))
+        ob.scale = (rnd.uniform(20, 30), rnd.uniform(14, 20), rnd.uniform(9, 14))
         out.append(ob)
     return out
 
@@ -355,4 +355,79 @@ def make_water(coll, y=8, width=60, length=60, z=-0.35):
     ob = _obj_from_bm(bm, "Water", coll, m, smooth=True)
     ob.location = (0, y, z)
     ob.scale = (width / 2, length / 2, 1)
+    return ob
+
+
+def make_sky_dome(coll, radius=220, horizon=(1.00, 0.60, 0.26),
+                  zenith=(0.016, 0.080, 0.110), mid=(0.055, 0.190, 0.215),
+                  strength=0.75, sun_dir=(0.35, -1.0, 0.24)):
+    """Osmon gumbazi: haqiqiy geometriya + emission gradient.
+    World node'lariga bog'liq emas — har qanday kamerada bir xil chiqadi."""
+    import bmesh
+    from mathutils import Vector as _V
+
+    bm = bmesh.new()
+    bmesh.ops.create_uvsphere(bm, u_segments=48, v_segments=32, radius=radius)
+    bmesh.ops.reverse_faces(bm, faces=bm.faces)
+    me = bpy.data.meshes.new("skydome")
+    bm.to_mesh(me)
+    bm.free()
+    for p in me.polygons:
+        p.use_smooth = True
+    ob = bpy.data.objects.new("SkyDome", me)
+    coll.objects.link(ob)
+    ob.visible_shadow = False
+
+    m = bpy.data.materials.new("skydome_mat")
+    m.use_nodes = True
+    nt = m.node_tree
+    nt.nodes.clear()
+    out = nt.nodes.new("ShaderNodeOutputMaterial")
+    em = nt.nodes.new("ShaderNodeEmission")
+    em.inputs["Strength"].default_value = strength
+
+    tc = nt.nodes.new("ShaderNodeTexCoord")
+    mr = nt.nodes.new("ShaderNodeMapRange")
+    mr.inputs["From Min"].default_value = -0.02
+    mr.inputs["From Max"].default_value = 0.42
+    mr.clamp = True
+    nt.links.new(tc.outputs["Object"], nt.nodes.new("ShaderNodeSeparateXYZ").inputs["Vector"])
+    sep = [n for n in nt.nodes if n.type == 'SEPARATE_XYZ'][0]
+    nt.links.new(sep.outputs["Z"], mr.inputs["Value"])
+
+    ramp = nt.nodes.new("ShaderNodeValToRGB")
+    cr = ramp.color_ramp
+    cr.interpolation = 'EASE'
+    cr.elements[0].position = 0.0
+    cr.elements[0].color = (*horizon, 1)
+    cr.elements[1].position = 1.0
+    cr.elements[1].color = (*zenith, 1)
+    for pos, col in ((0.14, (0.98, 0.47, 0.17)),
+                     (0.36, (0.30, 0.34, 0.26)),
+                     (0.60, mid)):
+        e = cr.elements.new(pos)
+        e.color = (*col, 1)
+    nt.links.new(mr.outputs["Result"], ramp.inputs["Fac"])
+
+    # quyosh halqasi
+    geo = nt.nodes.new("ShaderNodeNewGeometry")
+    dot = nt.nodes.new("ShaderNodeVectorMath")
+    dot.operation = 'DOT_PRODUCT'
+    dot.inputs[1].default_value = _V(sun_dir).normalized()
+    nt.links.new(geo.outputs["Incoming"], dot.inputs[0])
+    mr2 = nt.nodes.new("ShaderNodeMapRange")
+    mr2.inputs["From Min"].default_value = 0.90
+    mr2.inputs["From Max"].default_value = 1.0
+    mr2.clamp = True
+    nt.links.new(dot.outputs["Value"], mr2.inputs["Value"])
+    mix = nt.nodes.new("ShaderNodeMixRGB")
+    mix.blend_type = 'ADD'
+    mix.inputs["Color2"].default_value = (1.0, 0.70, 0.34, 1)
+    nt.links.new(ramp.outputs["Color"], mix.inputs["Color1"])
+    nt.links.new(mr2.outputs["Result"], mix.inputs["Fac"])
+
+    nt.links.new(mix.outputs["Color"], em.inputs["Color"])
+    nt.links.new(em.outputs["Emission"], out.inputs["Surface"])
+    me.materials.append(m)
+    ob.location = (0, 0, 0)
     return ob

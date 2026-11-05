@@ -69,6 +69,8 @@ def build(plan, shot, outdir, samples=6, preview=None, quality=None, gpu=False,
                       seed=seed + 2, dry=dry)
     NA.make_clouds(c_env, count=int(shot.get("clouds", 7) * q), seed=seed + 3)
     NA.make_sun(c_env, direction=sun_dir, size=shot.get("sun_size", 6.0))
+    NA.make_sky_dome(c_env, horizon=shot.get("sky_horizon"),
+                     zenith=shot.get("sky_top"), sun_dir=sun_dir)
 
     # ---------------- DARAXTLAR ----------------
     trees = []
