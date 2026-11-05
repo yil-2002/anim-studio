@@ -25,16 +25,23 @@ import lib_fx as FX
 
 
 # ----------------------------------------------------------------------------
-def build(plan, shot, outdir, samples=6, preview=None, quality=None, gpu=False):
+def build(plan, shot, outdir, samples=6, preview=None, quality=None, gpu=False,
+          res_override=None, denoise=False):
     sc = bpy.context.scene
     q = float(quality if quality is not None else plan.get("quality", 1.0))
     SUB = 2 if q >= 0.85 else 1
     fps = plan.get("fps", 24)
-    res = tuple(plan.get("res", [720, 1280]))
+    res = tuple(res_override or plan.get("res", [720, 1280]))
     ST.setup_render(sc, res=res, samples=samples, fps=fps)
     if gpu:
         ok = ST.setup_gpu(sc, denoise=True, samples=samples)
         print("GPU:", ok, flush=True)
+    if denoise:
+        # OIDN — kam sample bilan ham toza natija beradi (CPU'da ishlaydi)
+        sc.cycles.use_denoising = True
+        sc.cycles.denoiser = 'OPENIMAGEDENOISE'
+        sc.cycles.denoising_input_passes = 'RGB_ALBEDO_NORMAL'
+        print("DENOISE: OIDN", flush=True)
 
     sun_dir = shot.get("sun_dir", [0.35, -1.0, 0.24])
     ST.setup_world(sc, sun_dir=sun_dir,
@@ -156,6 +163,8 @@ def main():
     ap.add_argument("--save-blend", default=None)
     ap.add_argument("--quality", type=float, default=None)
     ap.add_argument("--gpu", action="store_true")
+    ap.add_argument("--denoise", action="store_true")
+    ap.add_argument("--res", default=None, help="masalan 540x960")
     a = ap.parse_args(argv)
 
     with open(a.plan, encoding="utf-8") as f:
@@ -163,8 +172,12 @@ def main():
     shot = plan["shots"][a.shot]
 
     bpy.ops.wm.read_factory_settings(use_empty=True)
+    res_override = None
+    if a.res:
+        w, h = a.res.lower().split("x")
+        res_override = (int(w), int(h))
     build(plan, shot, a.outdir, samples=a.samples, preview=a.preview,
-          quality=a.quality, gpu=a.gpu)
+          quality=a.quality, gpu=a.gpu, res_override=res_override, denoise=a.denoise)
     if a.save_blend:
         bpy.ops.wm.save_as_mainfile(filepath=a.save_blend)
 

@@ -15,6 +15,10 @@ on:
         description: "Sahna zichligi (1.0 = to'liq, 0.4 = tez)"
         default: "1.0"
         required: true
+      res:
+        description: "O'lcham: 720x1280 (final) yoki 540x960 (tez)"
+        default: "720x1280"
+        required: true
   push:
     paths:
       - "scenes/**.json"
@@ -75,7 +79,9 @@ jobs:
           ~/blender/blender -b -P blender/build_scene.py -- \
             --plan "$PLAN" --shot ${{ matrix.shot }} --outdir frames \
             --samples ${{ github.event.inputs.samples || 48 }} \
-            --quality ${{ github.event.inputs.quality || 1.0 }} 2>&1 | tail -20
+            --quality ${{ github.event.inputs.quality || 1.0 }} \
+            --res ${{ github.event.inputs.res || '720x1280' }} \
+            --denoise 2>&1 | grep -E "DENOISE|Time:|Saved|Error" | tail -15
           echo "--- kadrlar soni: $(ls frames/*.png 2>/dev/null | wc -l)"
 
       - name: MP4 ga kodlash
