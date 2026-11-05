@@ -367,7 +367,7 @@ def make_sky_dome(coll, radius=220, horizon=(1.00, 0.60, 0.26),
     from mathutils import Vector as _V
 
     bm = bmesh.new()
-    bmesh.ops.create_uvsphere(bm, u_segments=48, v_segments=32, radius=radius)
+    bmesh.ops.create_uvsphere(bm, u_segments=40, v_segments=20, radius=radius)
     bmesh.ops.reverse_faces(bm, faces=bm.faces)
     me = bpy.data.meshes.new("skydome")
     bm.to_mesh(me)
@@ -376,7 +376,12 @@ def make_sky_dome(coll, radius=220, horizon=(1.00, 0.60, 0.26),
         p.use_smooth = True
     ob = bpy.data.objects.new("SkyDome", me)
     coll.objects.link(ob)
+    # MUHIM: gumbaz faqat KAMERAGA ko'rinadi — yorug'lik manbai emas (aks holda render osilib qoladi)
     ob.visible_shadow = False
+    ob.visible_diffuse = False
+    ob.visible_glossy = False
+    ob.visible_transmission = False
+    ob.visible_volume_scatter = False
 
     m = bpy.data.materials.new("skydome_mat")
     m.use_nodes = True
