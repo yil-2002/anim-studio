@@ -26,7 +26,7 @@ import lib_fx as FX
 
 # ----------------------------------------------------------------------------
 def build(plan, shot, outdir, samples=6, preview=None, quality=None, gpu=False,
-          res_override=None, denoise=False):
+          res_override=None, denoise=False, frame_start=None, frame_end=None):
     sc = bpy.context.scene
     q = float(quality if quality is not None else plan.get("quality", 1.0))
     SUB = 2 if q >= 0.85 else 1
@@ -130,8 +130,8 @@ def build(plan, shot, outdir, samples=6, preview=None, quality=None, gpu=False,
     dur_f = int(round(shot["dur"] * fps))
     CAm.animate_shot(cam, shot.get("cam", {}), 1, dur_f)
 
-    sc.frame_start = 1
-    sc.frame_end = dur_f
+    sc.frame_start = frame_start or 1
+    sc.frame_end = frame_end or dur_f
     sc.frame_current = 1
 
     # ---------------- RENDER SOZLAMALARI ----------------
@@ -165,6 +165,8 @@ def main():
     ap.add_argument("--gpu", action="store_true")
     ap.add_argument("--denoise", action="store_true")
     ap.add_argument("--res", default=None, help="masalan 540x960")
+    ap.add_argument("--frame-start", type=int, default=None)
+    ap.add_argument("--frame-end", type=int, default=None)
     a = ap.parse_args(argv)
 
     with open(a.plan, encoding="utf-8") as f:
@@ -177,7 +179,8 @@ def main():
         w, h = a.res.lower().split("x")
         res_override = (int(w), int(h))
     build(plan, shot, a.outdir, samples=a.samples, preview=a.preview,
-          quality=a.quality, gpu=a.gpu, res_override=res_override, denoise=a.denoise)
+          quality=a.quality, gpu=a.gpu, res_override=res_override, denoise=a.denoise,
+          frame_start=a.frame_start, frame_end=a.frame_end)
     if a.save_blend:
         bpy.ops.wm.save_as_mainfile(filepath=a.save_blend)
 

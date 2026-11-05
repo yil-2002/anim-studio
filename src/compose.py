@@ -11,6 +11,10 @@ import json
 import os
 import subprocess
 import sys
+import tempfile
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from plan_info import build_tasks
 
 TRANSITION = 0.55          # shotlar orasidagi o'tish (soniya)
 FONT = "DejaVu Sans"
@@ -150,17 +154,49 @@ def compose(plan, clips_dir, out, audio=None, watermark="", crf=20, bloom=0.16):
     return out
 
 
+def stitch_segments(plan, seg_dir, chunk=28):
+    """Bo'laklarni (seg_*.mp4) har bir shot bo'yicha ketma-ket ulab clip_i.mp4 yasaydi."""
+    tasks = build_tasks(plan, chunk)
+    outdir = tempfile.mkdtemp(prefix="stitch_")
+    per_shot = {}
+    for t in tasks:
+        f = os.path.join(seg_dir, f"seg_{t['idx']}.mp4")
+        if not os.path.exists(f):
+            sys.exit(f"XATO: {f} topilmadi")
+        per_shot.setdefault(t["shot"], []).append(f)
+
+    for si, files in sorted(per_shot.items()):
+        lst = os.path.join(outdir, f"list_{si}.txt")
+        with open(lst, "w") as fh:
+            for f in files:
+                fh.write(f"file '{os.path.abspath(f)}'\n")
+        out = os.path.join(outdir, f"clip_{si}.mp4")
+        cmd = ["ffmpeg", "-y", "-v", "error", "-f", "concat", "-safe", "0",
+               "-i", lst, "-c", "copy", out]
+        if subprocess.run(cmd).returncode != 0:
+            cmd = ["ffmpeg", "-y", "-v", "error", "-f", "concat", "-safe", "0",
+                   "-i", lst, "-c:v", "libx264", "-crf", "16", "-pix_fmt", "yuv420p", out]
+            subprocess.run(cmd)
+        print(f"  shot {si}: {len(files)} bo'lak -> {out}")
+    return outdir
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--plan", required=True)
     ap.add_argument("--clips-dir", default=".")
+    ap.add_argument("--segments", default=None, help="seg_N.mp4 papkasi")
+    ap.add_argument("--chunk", type=int, default=28)
     ap.add_argument("--out", default="final.mp4")
     ap.add_argument("--audio", default=None)
     ap.add_argument("--watermark", default="")
     ap.add_argument("--crf", type=int, default=20)
     a = ap.parse_args()
     plan = json.load(open(a.plan, encoding="utf-8"))
-    compose(plan, a.clips_dir, a.out, a.audio, a.watermark, a.crf)
+    clips_dir = a.clips_dir
+    if a.segments:
+        clips_dir = stitch_segments(plan, a.segments, a.chunk)
+    compose(plan, clips_dir, a.out, a.audio, a.watermark, a.crf)
 
 
 if __name__ == "__main__":

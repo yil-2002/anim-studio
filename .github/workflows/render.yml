@@ -8,8 +8,8 @@ on:
         default: "scenes/demo.json"
         required: true
       samples:
-        description: "Cycles samples (48 = sifatli, 12 = tez)"
-        default: "48"
+        description: "Cycles samples (10 = tez, 32 = final sifat)"
+        default: "12"
         required: true
       quality:
         description: "Sahna zichligi (1.0 = to'liq, 0.4 = tez)"
@@ -23,6 +23,10 @@ on:
         description: "1 = faqat bitta kadr (vaqt o'lchash uchun)"
         default: "0"
         required: true
+      chunk:
+        description: "Bir jobdagi kadrlar soni (kichikroq = ko'proq parallel)"
+        default: "28"
+        required: true
   push:
     paths:
       - "scenes/**.json"
@@ -34,13 +38,15 @@ jobs:
   plan:
     runs-on: ubuntu-latest
     outputs:
-      count: ${{ steps.read.outputs.count }}
+      matrix: ${{ steps.read.outputs.matrix }}
+      nslots: ${{ steps.read.outputs.nslots }}
       fps: ${{ steps.read.outputs.fps }}
     steps:
       - uses: actions/checkout@v4
       - id: read
         env:
           PLAN: ${{ github.event.inputs.plan || 'scenes/demo.json' }}
+          CHUNK: ${{ github.event.inputs.chunk || '28' }}
         run: python3 src/plan_info.py >> $GITHUB_OUTPUT
 
   render:
@@ -50,7 +56,7 @@ jobs:
       fail-fast: false
       max-parallel: 20
       matrix:
-        shot: ${{ fromJSON(needs.plan.outputs.count) }}
+        task: ${{ fromJSON(needs.plan.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v4
 
@@ -76,7 +82,7 @@ jobs:
           sudo apt-get install -y -qq libx11-6 libxi6 libxxf86vm1 libxfixes3 \
             libxrender1 libgl1 libegl1 libsm6 libice6 libglib2.0-0 ffmpeg fonts-dejavu-core
 
-      - name: Render (shot ${{ matrix.shot }})
+      - name: Render (shot ${{ matrix.task.shot }} kadr ${{ matrix.task.fs }}-${{ matrix.task.fe }})
         run: |
           PLAN="${{ github.event.inputs.plan || 'scenes/demo.json' }}"
           mkdir -p frames
@@ -84,7 +90,8 @@ jobs:
           if [ "${{ github.event.inputs.preview }}" = "1" ]; then EXTRA="--preview 1"; fi
           echo "START $(date +%T)"
           time ~/blender/blender -b -P blender/build_scene.py -- \
-            --plan "$PLAN" --shot ${{ matrix.shot }} --outdir frames \
+            --plan "$PLAN" --shot ${{ matrix.task.shot }} --outdir frames \
+            --frame-start ${{ matrix.task.fs }} --frame-end ${{ matrix.task.fe }} \
             --samples ${{ github.event.inputs.samples || 48 }} \
             --quality ${{ github.event.inputs.quality || 1.0 }} \
             --res ${{ github.event.inputs.res || '720x1280' }} \
@@ -101,14 +108,15 @@ jobs:
         run: |
           FPS=${{ needs.plan.outputs.fps }}
           if ! ls frames/*.png >/dev/null 2>&1; then echo "KADR YO'Q!"; exit 1; fi
-          ffmpeg -y -v error -framerate $FPS -i frames/f_%04d.png \
-            -c:v libx264 -preset medium -crf 16 -pix_fmt yuv420p clip_${{ matrix.shot }}.mp4
-          ls -lh clip_${{ matrix.shot }}.mp4
+          ffmpeg -y -v error -framerate $FPS -start_number ${{ matrix.task.fs }} \
+            -i frames/f_%04d.png -c:v libx264 -preset medium -crf 16 \
+            -pix_fmt yuv420p seg_${{ matrix.task.idx }}.mp4
+          ls -lh seg_${{ matrix.task.idx }}.mp4
 
       - uses: actions/upload-artifact@v4
         with:
-          name: clip-${{ matrix.shot }}
-          path: clip_${{ matrix.shot }}.mp4
+          name: seg-${{ matrix.task.idx }}
+          path: seg_${{ matrix.task.idx }}.mp4
           retention-days: 3
 
   compose:
@@ -118,7 +126,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
-          pattern: clip-*
+          pattern: seg-*
           merge-multiple: true
 
       - name: Kutubxonalar
@@ -130,8 +138,9 @@ jobs:
         run: |
           PLAN="${{ github.event.inputs.plan || 'scenes/demo.json' }}"
           WM="${{ secrets.WATERMARK }}"
-          python3 src/compose.py --plan "$PLAN" --clips-dir . --out final.mp4 \
-            --audio narration.m4a --watermark "$WM"
+          CHUNK="${{ github.event.inputs.chunk || '28' }}"
+          python3 src/compose.py --plan "$PLAN" --out final.mp4 \
+            --segments . --chunk "$CHUNK" --audio narration.m4a --watermark "$WM"
           ls -lh final.mp4
 
       - uses: actions/upload-artifact@v4
