@@ -82,8 +82,15 @@ jobs:
           tar -xf /tmp/b.tar.xz -C ~/blender --strip-components=1
           ~/blender/blender --version | head -1
 
-      - name: Tekshiruv
+      - name: Tizim kutubxonalari (EGL/GL)
         run: |
+          if ! ldconfig -p | grep -q libEGL.so.1; then
+            echo "libEGL yo'q — o'rnatilmoqda"
+            timeout 300 sudo apt-get install -y -qq --no-install-recommends \
+              libegl1 libgl1 libxi6 libxrender1 libxxf86vm1 libxfixes3 \
+              libsm6 libice6 libx11-6 libglib2.0-0 || echo "apt xato (davom etamiz)"
+          fi
+          ldconfig -p | grep -c "libEGL" || true
           ffmpeg -version | head -1 || echo "ffmpeg yo'q"
           ~/blender/blender --version | head -1
 
