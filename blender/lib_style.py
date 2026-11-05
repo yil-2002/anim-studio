@@ -87,7 +87,7 @@ def mat(name, color, rough=0.85, spec=0.25, emit=0.0, noise_scale=0.0,
 # OSMON / WORLD — ekran bo'ylab vertikal gradient + quyosh nuri
 # ----------------------------------------------------------------------------
 def setup_world(scene, sun_dir=(0.35, -1.0, 0.22), warmth=1.0, horizon=None, top=None,
-                strength=0.85):
+                strength=0.95):
     """Ekran emas, KO'RISH YO'NALISHI bo'yicha gradient — har qanday kamerada to'g'ri."""
     w = bpy.data.worlds.new("SKY")
     scene.world = w
@@ -99,9 +99,10 @@ def setup_world(scene, sun_dir=(0.35, -1.0, 0.22), warmth=1.0, horizon=None, top
     bg = nt.nodes.new("ShaderNodeBackground")
     bg.inputs["Strength"].default_value = strength
 
-    geo = nt.nodes.new("ShaderNodeNewGeometry")
+    tc = nt.nodes.new("ShaderNodeTexCoord")          # world: Generated = yo'nalish vektori
     sep = nt.nodes.new("ShaderNodeSeparateXYZ")
-    nt.links.new(geo.outputs["Incoming"], sep.inputs["Vector"])
+    nt.links.new(tc.outputs["Generated"], sep.inputs["Vector"])
+    geo = nt.nodes.new("ShaderNodeNewGeometry")
 
     mr = nt.nodes.new("ShaderNodeMapRange")
     mr.inputs["From Min"].default_value = -0.03
@@ -129,7 +130,7 @@ def setup_world(scene, sun_dir=(0.35, -1.0, 0.22), warmth=1.0, horizon=None, top
     dot = nt.nodes.new("ShaderNodeVectorMath")
     dot.operation = 'DOT_PRODUCT'
     dot.inputs[1].default_value = Vector(sun_dir).normalized()
-    nt.links.new(geo.outputs["Incoming"], dot.inputs[0])
+    nt.links.new(tc.outputs["Generated"], dot.inputs[0])
 
     mr2 = nt.nodes.new("ShaderNodeMapRange")
     mr2.inputs["From Min"].default_value = 0.86

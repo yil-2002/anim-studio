@@ -74,9 +74,6 @@ def build(plan, shot, outdir, samples=6, preview=None, quality=None, gpu=False,
     print("STAGE: clouds ok", flush=True)
     NA.make_sun(c_env, direction=sun_dir, size=shot.get("sun_size", 6.0))
     print("STAGE: sun ok", flush=True)
-    NA.make_sky_dome(c_env, horizon=shot.get("sky_horizon"),
-                     zenith=shot.get("sky_top"), sun_dir=sun_dir)
-    print("STAGE: skydome ok", flush=True)
 
     # ---------------- DARAXTLAR ----------------
     trees = []
