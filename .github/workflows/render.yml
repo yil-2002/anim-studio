@@ -124,10 +124,13 @@ jobs:
           retention-days: 7
 
       - name: Telegram'ga yuborish
-        if: ${{ secrets.TG_BOT_TOKEN != '' }}
+        env:
+          TG_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+          TG_CHAT: ${{ secrets.TG_CHAT_ID }}
         run: |
-          curl -s -F chat_id="${{ secrets.TG_CHAT_ID }}" \
+          if [ -z "$TG_TOKEN" ]; then echo "TG token yo'q — o'tkazib yuborildi"; exit 0; fi
+          curl -s -F chat_id="$TG_CHAT" \
                -F video=@final.mp4 \
                -F caption="Video tayyor: ${{ github.event.inputs.plan }}" \
                -F supports_streaming=true \
-               "https://api.telegram.org/bot${{ secrets.TG_BOT_TOKEN }}/sendVideo" | head -c 300
+               "https://api.telegram.org/bot$TG_TOKEN/sendVideo" | head -c 300
