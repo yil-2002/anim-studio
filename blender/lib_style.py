@@ -87,65 +87,17 @@ def mat(name, color, rough=0.85, spec=0.25, emit=0.0, noise_scale=0.0,
 # OSMON / WORLD — ekran bo'ylab vertikal gradient + quyosh nuri
 # ----------------------------------------------------------------------------
 def setup_world(scene, sun_dir=(0.92, 0.42, 0.20), warmth=1.0, horizon=None, top=None,
-                strength=0.95):
-    """Ekran emas, KO'RISH YO'NALISHI bo'yicha gradient — har qanday kamerada to'g'ri."""
+                strength=0.85):
+    """World = bir xil issiq ambient. Ko'rinadigan osmon gradienti — SkyDome'da."""
     w = bpy.data.worlds.new("SKY")
     scene.world = w
     w.use_nodes = True
     nt = w.node_tree
     nt.nodes.clear()
-
     out = nt.nodes.new("ShaderNodeOutputWorld")
     bg = nt.nodes.new("ShaderNodeBackground")
     bg.inputs["Strength"].default_value = strength
-
-    tc = nt.nodes.new("ShaderNodeTexCoord")          # world: Generated = yo'nalish vektori
-    sep = nt.nodes.new("ShaderNodeSeparateXYZ")
-    nt.links.new(tc.outputs["Generated"], sep.inputs["Vector"])
-    geo = nt.nodes.new("ShaderNodeNewGeometry")
-
-    mr = nt.nodes.new("ShaderNodeMapRange")
-    mr.inputs["From Min"].default_value = -0.03
-    mr.inputs["From Max"].default_value = 0.34
-    mr.clamp = True
-    nt.links.new(sep.outputs["Z"], mr.inputs["Value"])
-
-    ramp = nt.nodes.new("ShaderNodeValToRGB")
-    cr = ramp.color_ramp
-    cr.interpolation = 'EASE'
-    top_c = top or (0.018, 0.085, 0.115)
-    hor_c = horizon or (1.000, 0.640, 0.290)
-    cr.elements[0].position = 0.00
-    cr.elements[0].color = (*hor_c, 1)
-    cr.elements[1].position = 1.00
-    cr.elements[1].color = (*top_c, 1)
-    for pos, col in ((0.16, (0.99, 0.520, 0.210)),
-                     (0.34, (0.42, 0.360, 0.250)),
-                     (0.55, (0.075, 0.215, 0.235))):
-        e = cr.elements.new(pos)
-        e.color = (*col, 1)
-    nt.links.new(mr.outputs["Result"], ramp.inputs["Fac"])
-
-    # quyosh atrofidagi issiq halo
-    dot = nt.nodes.new("ShaderNodeVectorMath")
-    dot.operation = 'DOT_PRODUCT'
-    dot.inputs[1].default_value = Vector(sun_dir).normalized()
-    nt.links.new(tc.outputs["Generated"], dot.inputs[0])
-
-    mr2 = nt.nodes.new("ShaderNodeMapRange")
-    mr2.inputs["From Min"].default_value = 0.86
-    mr2.inputs["From Max"].default_value = 1.0
-    mr2.inputs["To Max"].default_value = 1.0
-    mr2.clamp = True
-    nt.links.new(dot.outputs["Value"], mr2.inputs["Value"])
-
-    mix = nt.nodes.new("ShaderNodeMixRGB")
-    mix.blend_type = 'ADD'
-    mix.inputs["Color2"].default_value = (1.0, 0.62, 0.26, 1)
-    nt.links.new(ramp.outputs["Color"], mix.inputs["Color1"])
-    nt.links.new(mr2.outputs["Result"], mix.inputs["Fac"])
-
-    nt.links.new(mix.outputs["Color"], bg.inputs["Color"])
+    bg.inputs["Color"].default_value = (0.34, 0.42, 0.46, 1)
     nt.links.new(bg.outputs["Background"], out.inputs["Surface"])
     return w
 
@@ -184,7 +136,7 @@ def setup_lights(sun_dir=(0.92, 0.42, 0.20), energy=6.0, warm=1.0):
 # RENDER SOZLAMALARI
 # ----------------------------------------------------------------------------
 def setup_render(scene, res=(720, 1280), samples=4, fps=24, mist=True,
-                 view_transform='AgX', exposure=0.55):
+                 view_transform='Standard', exposure=0.05):
     r = scene.render
     r.resolution_x, r.resolution_y = res
     r.resolution_percentage = 100
@@ -214,7 +166,7 @@ def setup_render(scene, res=(720, 1280), samples=4, fps=24, mist=True,
         vs.view_transform = view_transform
     except TypeError:
         vs.view_transform = 'Filmic'
-    for look in ('AgX - Punchy', 'Punchy', 'Medium High Contrast', 'None'):
+    for look in ('None',):
         try:
             vs.look = look
             break

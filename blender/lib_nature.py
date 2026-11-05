@@ -283,8 +283,8 @@ def make_hills(coll, count=5, radius=72, seed=5):
 
 def make_far_trees(coll, count=26, radius=30, seed=9, dry=False):
     rnd = random.Random(seed)
-    m = mat("far_leaf", (0.16, 0.26, 0.16) if not dry else (0.34, 0.28, 0.16),
-            rough=0.9, spec=0.05, emit=0.2)
+    m = mat("far_leaf", (0.085, 0.175, 0.075) if not dry else (0.30, 0.24, 0.12),
+            rough=0.9, spec=0.05, emit=0.0)
     mtr = mat("far_trunk", PALETTE["trunk"], rough=1.0, spec=0.02, emit=0.1)
     out = []
     for i in range(count):
@@ -303,9 +303,9 @@ def make_far_trees(coll, count=26, radius=30, seed=9, dry=False):
     return out
 
 
-def make_clouds(coll, count=7, seed=3, height=16, radius=40):
+def make_clouds(coll, count=7, seed=3, height=42, radius=95):
     rnd = random.Random(seed)
-    m = mat("cloud", (0.98, 0.86, 0.66), rough=1.0, spec=0.0, emit=0.9)
+    m = mat("cloud", (0.98, 0.86, 0.66), rough=1.0, spec=0.0, emit=0.55)
     out = []
     for i in range(count):
         a = math.pi * rnd.uniform(0.05, 0.95)
@@ -313,8 +313,8 @@ def make_clouds(coll, count=7, seed=3, height=16, radius=40):
         bm = blob(1.0, subdiv=2, irregular=0.22, seed=100 + i, squash=(1.9, 1.0, 0.42))
         ob = _obj_from_bm(bm, f"cloud{i}", coll, m)
         ob.location = (math.cos(a) * d, math.sin(a) * d, height + rnd.uniform(-3, 5))
-        s = rnd.uniform(2.5, 6.0)
-        ob.scale = (s, s, s * 0.7)
+        s = rnd.uniform(6.0, 12.0)
+        ob.scale = (s, s, s * 0.45)
         out.append(ob)
     return out
 

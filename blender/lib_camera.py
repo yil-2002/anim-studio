@@ -9,7 +9,7 @@ from mathutils import Vector, Euler
 
 SHOTS = {
     # nomi:          (distance, height, focal, target_height)
-    "wide":         (12.0, 2.6, 30.0, 1.9),
+    "wide":         (9.5, 2.4, 30.0, 1.9),
     "medium":       (6.2, 1.6, 45.0, 1.15),
     "close":        (2.6, 1.55, 70.0, 1.35),
     "closeup":      (1.7, 1.5, 85.0, 1.45),
