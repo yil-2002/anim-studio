@@ -170,7 +170,7 @@ def _run_guarded(fn):
         raise
 
 
-def _run_guarded(main):
+def main():
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
     ap = argparse.ArgumentParser()
     ap.add_argument("--plan", required=True)
