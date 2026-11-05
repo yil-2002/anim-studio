@@ -27,9 +27,6 @@ on:
         description: "Bir jobdagi kadrlar soni (kichikroq = ko'proq parallel)"
         default: "28"
         required: true
-  push:
-    paths:
-      - "scenes/**.json"
 
 env:
   BLENDER_VER: "4.3.2"
