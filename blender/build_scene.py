@@ -158,7 +158,19 @@ def build(plan, shot, outdir, samples=6, preview=None, quality=None, gpu=False,
         print("RENDERED:", outdir, dur_f, "frames")
 
 
-def main():
+def _run_guarded(fn):
+    import traceback
+    try:
+        return fn()
+    except BaseException as e:
+        print("XATO_TURI:", type(e).__name__, flush=True)
+        print("XATO_MATNI:", e, flush=True)
+        for line in traceback.format_exc().splitlines()[-14:]:
+            print("TRACE:", line, flush=True)
+        raise
+
+
+def _run_guarded(main):
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
     ap = argparse.ArgumentParser()
     ap.add_argument("--plan", required=True)
@@ -191,4 +203,4 @@ def main():
         bpy.ops.wm.save_as_mainfile(filepath=a.save_blend)
 
 
-main()
+_run_guarded(main)

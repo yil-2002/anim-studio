@@ -391,9 +391,9 @@ def make_sky_dome(coll, radius=220, horizon=(1.00, 0.60, 0.26),
     mr.inputs["From Min"].default_value = -0.02
     mr.inputs["From Max"].default_value = 0.42
     mr.clamp = True
-    nt.links.new(tc.outputs["Object"], nt.nodes.new("ShaderNodeSeparateXYZ").inputs["Vector"])
-    sep = [n for n in nt.nodes if n.type == 'SEPARATE_XYZ'][0]
-    nt.links.new(sep.outputs["Z"], mr.inputs["Value"])
+    sepxyz = nt.nodes.new("ShaderNodeSeparateXYZ")
+    nt.links.new(tc.outputs["Object"], sepxyz.inputs["Vector"])
+    nt.links.new(sepxyz.outputs["Z"], mr.inputs["Value"])
 
     ramp = nt.nodes.new("ShaderNodeValToRGB")
     cr = ramp.color_ramp
