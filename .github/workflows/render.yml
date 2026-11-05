@@ -82,22 +82,33 @@ jobs:
           tar -xf /tmp/b.tar.xz -C ~/blender --strip-components=1
           ~/blender/blender --version | head -1
 
-      - name: Kutubxonalar EGL (deb ajratish, apt kerak emas)
+      - name: Kutubxonalar EGL + mesa llvmpipe (deb ajratish, apt kerak emas)
         run: |
-          set -e
           mkdir -p ~/libs
-          if [ ! -e ~/libs/usr/lib/x86_64-linux-gnu/libEGL.so.1 ]; then
-            POOL=http://archive.ubuntu.com/ubuntu/pool/main/libg/libglvnd
+          if [ ! -e ~/libs/usr/lib/x86_64-linux-gnu/libEGL_mesa.so.0 ]; then
             cd /tmp
-            for pkg in libegl1 libglvnd0 libglx0; do
-              f=$(curl -s $POOL/ | grep -o "${pkg}_[^\"]*_amd64.deb" | sort -V | tail -1)
-              echo "yuklanadi: $f"
-              curl -fsSL "$POOL/$f" -o "$pkg.deb"
-              dpkg -x "$pkg.deb" ~/libs
+            for spec in "libg/libglvnd:libegl1 libglvnd0 libglx0 libgl1 libopengl0" "m/mesa:libegl-mesa0 libgl1-mesa-dri libglapi-mesa libgbm1"; do
+              pool=${spec%%:*}; pkgs=${spec#*:}
+              for pkg in $pkgs; do
+                f=$(curl -s "http://archive.ubuntu.com/ubuntu/pool/main/$pool/" | grep -o "${pkg}_[^\"]*_amd64.deb" | sort -V | tail -1)
+                [ -z "$f" ] && { echo "topilmadi: $pkg"; continue; }
+                echo "yuklanadi: $f"
+                curl -fsSL "http://archive.ubuntu.com/ubuntu/pool/main/$pool/$f" -o "$pkg.deb" || continue
+                dpkg -x "$pkg.deb" ~/libs
+              done
             done
           fi
-          ls ~/libs/usr/lib/x86_64-linux-gnu/ | head
-          echo "LD_LIBRARY_PATH=$HOME/libs/usr/lib/x86_64-linux-gnu" >> $GITHUB_ENV
+          ls ~/libs/usr/lib/x86_64-linux-gnu/ | grep -E "EGL|GL|gbm" | head
+          ls ~/libs/usr/lib/x86_64-linux-gnu/dri/ 2>/dev/null | head -3
+          {
+            echo "LD_LIBRARY_PATH=$HOME/libs/usr/lib/x86_64-linux-gnu"
+            echo "LIBGL_DRIVERS_PATH=$HOME/libs/usr/lib/x86_64-linux-gnu/dri"
+            echo "__EGL_VENDOR_LIBRARY_FILENAMES=$HOME/libs/usr/share/glvnd/egl_vendor.d/50_mesa.json"
+            echo "__GLX_VENDOR_LIBRARY_NAME=mesa"
+            echo "MESA_LOADER_DRIVER_OVERRIDE=llvmpipe"
+            echo "LIBGL_ALWAYS_SOFTWARE=1"
+            echo "GALLIUM_DRIVER=llvmpipe"
+          } >> $GITHUB_ENV
 
       - name: ffmpeg (statik)
         run: |
