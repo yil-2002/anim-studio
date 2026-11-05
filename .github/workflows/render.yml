@@ -19,6 +19,10 @@ on:
         description: "O'lcham: 720x1280 (final) yoki 540x960 (tez)"
         default: "720x1280"
         required: true
+      preview:
+        description: "1 = faqat bitta kadr (vaqt o'lchash uchun)"
+        default: "0"
+        required: true
   push:
     paths:
       - "scenes/**.json"
@@ -76,12 +80,21 @@ jobs:
         run: |
           PLAN="${{ github.event.inputs.plan || 'scenes/demo.json' }}"
           mkdir -p frames
-          ~/blender/blender -b -P blender/build_scene.py -- \
+          EXTRA=""
+          if [ "${{ github.event.inputs.preview }}" = "1" ]; then EXTRA="--preview 1"; fi
+          echo "START $(date +%T)"
+          time ~/blender/blender -b -P blender/build_scene.py -- \
             --plan "$PLAN" --shot ${{ matrix.shot }} --outdir frames \
             --samples ${{ github.event.inputs.samples || 48 }} \
             --quality ${{ github.event.inputs.quality || 1.0 }} \
             --res ${{ github.event.inputs.res || '720x1280' }} \
-            --denoise 2>&1 | grep -E "DENOISE|Time:|Saved|Error" | tail -15
+            --denoise $EXTRA 2>&1 | grep -E "DENOISE|Time:|Saved|Error|GPU" | tail -25
+          echo "END $(date +%T)"
+          if [ "${{ github.event.inputs.preview }}" = "1" ]; then
+            echo "PREVIEW rejimi: 1 kadr"
+             cp frames/preview_*.png frames/f_0001.png || true
+             rm -f frames/preview_*.png
+          fi
           echo "--- kadrlar soni: $(ls frames/*.png 2>/dev/null | wc -l)"
 
       - name: MP4 ga kodlash
