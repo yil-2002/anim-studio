@@ -106,6 +106,8 @@ jobs:
             echo "__EGL_VENDOR_LIBRARY_FILENAMES=$HOME/libs/usr/share/glvnd/egl_vendor.d/50_mesa.json"
             echo "__GLX_VENDOR_LIBRARY_NAME=mesa"
             echo "MESA_LOADER_DRIVER_OVERRIDE=llvmpipe"
+            echo "EGL_PLATFORM=surfaceless"
+            echo "MESA_GL_VERSION_OVERRIDE=4.5"
             echo "LIBGL_ALWAYS_SOFTWARE=1"
             echo "GALLIUM_DRIVER=llvmpipe"
           } >> $GITHUB_ENV

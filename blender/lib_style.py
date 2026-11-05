@@ -186,20 +186,9 @@ def setup_render(scene, res=(720, 1280), samples=4, fps=24, mist=True,
         except AttributeError:
             pass
 
-    # Bloom uchun Glare node (arzon, kadr boshiga ~0.05s)
-    scene.use_nodes = True
-    nt = scene.node_tree
-    nt.nodes.clear()
-    rl = nt.nodes.new("CompositorNodeRLayers")
-    gl = nt.nodes.new("CompositorNodeGlare")
-    gl.glare_type = 'FOG_GLOW'
-    gl.quality = 'MEDIUM'
-    gl.threshold = 2.2
-    gl.size = 5
-    gl.mix = -0.55
-    comp = nt.nodes.new("CompositorNodeComposite")
-    nt.links.new(rl.outputs["Image"], gl.inputs["Image"])
-    nt.links.new(gl.outputs["Image"], comp.inputs["Image"])
+    # GPU kontekst talab qiladigan kompozitor o'chirilgan: glow/vignette ffmpeg'da.
+    scene.render.use_compositing = False
+    scene.use_nodes = False
     return scene
 
 
