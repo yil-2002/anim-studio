@@ -82,17 +82,22 @@ jobs:
           tar -xf /tmp/b.tar.xz -C ~/blender --strip-components=1
           ~/blender/blender --version | head -1
 
-      - name: Tizim kutubxonalari (EGL/GL)
+      - name: Tizim kutubxonalari (EGL/GL, ffmpeg)
         run: |
-          if ! ldconfig -p | grep -q libEGL.so.1 || ! command -v ffmpeg >/dev/null; then
-            echo "kutubxonalar/ffmpeg yo'q — o'rnatilmoqda"
+          set +e
+          NEED=0
+          ldconfig -p | grep -q libEGL.so.1 || NEED=1
+          command -v ffmpeg >/dev/null || NEED=1
+          if [ "$NEED" = "1" ]; then
+            echo "kutubxonalar yetishmayapti - ornatilmoqda"
+            timeout 200 sudo apt-get update -qq
             timeout 420 sudo apt-get install -y -qq --no-install-recommends \
               libegl1 libgl1 libxi6 libxrender1 libxxf86vm1 libxfixes3 \
-              libsm6 libice6 libx11-6 libglib2.0-0 ffmpeg \|\| echo "apt xato (davom etamiz)"
+              libsm6 libice6 libx11-6 libglib2.0-0 ffmpeg
+            echo "apt_exit=$?"
           fi
-          command -v ffmpeg && ffmpeg -version | head -1
-          ldconfig -p | grep -c "libEGL" || true
-          ffmpeg -version | head -1 || echo "ffmpeg yo'q"
+          ldconfig -p | grep -c libEGL
+          ffmpeg -version | head -1
           ~/blender/blender --version | head -1
 
       - name: Render (shot ${{ matrix.task.shot }} kadr ${{ matrix.task.fs }}-${{ matrix.task.fe }})
