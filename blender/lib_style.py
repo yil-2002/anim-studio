@@ -174,6 +174,9 @@ def setup_lights(sun_dir=(0.35, -1.0, 0.22), energy=5.5, warm=1.0):
     bpy.context.collection.objects.link(fill)
     fill.location = (-d.x * 12, -d.y * 12, 10)
     fill.rotation_euler = (Vector((0, 0, 0)) - fill.location).to_track_quat('-Z', 'Y').to_euler()
+    fill.visible_camera = False          # kameraga ko'rinmasin!
+    fill.visible_glossy = False
+    sun.visible_camera = False
     return sun
 
 

@@ -360,7 +360,7 @@ def make_water(coll, y=8, width=60, length=60, z=-0.35):
 
 def make_sky_dome(coll, radius=220, horizon=(1.00, 0.60, 0.26),
                   zenith=(0.016, 0.080, 0.110), mid=(0.055, 0.190, 0.215),
-                  strength=0.75, sun_dir=(0.35, -1.0, 0.24)):
+                  strength=1.35, sun_dir=(0.35, -1.0, 0.24)):
     """Osmon gumbazi: haqiqiy geometriya + emission gradient.
     World node'lariga bog'liq emas — har qanday kamerada bir xil chiqadi."""
     import bmesh
@@ -396,8 +396,8 @@ def make_sky_dome(coll, radius=220, horizon=(1.00, 0.60, 0.26),
 
     tc = nt.nodes.new("ShaderNodeTexCoord")
     mr = nt.nodes.new("ShaderNodeMapRange")
-    mr.inputs["From Min"].default_value = -0.02
-    mr.inputs["From Max"].default_value = 0.42
+    mr.inputs["From Min"].default_value = 0.0
+    mr.inputs["From Max"].default_value = 0.30
     mr.clamp = True
     sepxyz = nt.nodes.new("ShaderNodeSeparateXYZ")
     nt.links.new(tc.outputs["Object"], sepxyz.inputs["Vector"])
@@ -410,9 +410,9 @@ def make_sky_dome(coll, radius=220, horizon=(1.00, 0.60, 0.26),
     cr.elements[0].color = (*horizon, 1)
     cr.elements[1].position = 1.0
     cr.elements[1].color = (*zenith, 1)
-    for pos, col in ((0.14, (0.98, 0.47, 0.17)),
-                     (0.36, (0.30, 0.34, 0.26)),
-                     (0.60, mid)):
+    for pos, col in ((0.18, (0.95, 0.42, 0.14)),
+                     (0.40, (0.22, 0.30, 0.24)),
+                     (0.65, mid)):
         e = cr.elements.new(pos)
         e.color = (*col, 1)
     nt.links.new(mr.outputs["Result"], ramp.inputs["Fac"])
