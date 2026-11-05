@@ -1,5 +1,5 @@
 {
- "title": "Anor daraxti — ibratli hikoya (demo)",
+ "title": "preview",
  "fps": 24,
  "res": [
   720,
@@ -8,7 +8,7 @@
  "shots": [
   {
    "id": 1,
-   "dur": 4.5,
+   "dur": 0.0417,
    "text": "Har bir berilmagan narsani mahrumlik deb hisoblama.",
    "env": "orchard",
    "seed": 11,
