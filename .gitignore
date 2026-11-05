@@ -1,0 +1,11 @@
+build/
+out/
+frames/
+*.mp4
+*.png
+!assets/**/*.png
+__pycache__/
+*.pyc
+.modal.toml
+subs.ass
+tools_rhubarb/

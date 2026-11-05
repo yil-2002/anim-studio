@@ -1,0 +1,133 @@
+name: Render animation
+
+on:
+  workflow_dispatch:
+    inputs:
+      plan:
+        description: "Plan fayli (scenes/ ichida)"
+        default: "scenes/demo.json"
+        required: true
+      samples:
+        description: "Cycles samples (48 = sifatli, 12 = tez)"
+        default: "48"
+        required: true
+      quality:
+        description: "Sahna zichligi (1.0 = to'liq, 0.4 = tez)"
+        default: "1.0"
+        required: true
+  push:
+    paths:
+      - "scenes/**.json"
+
+env:
+  BLENDER_VER: "4.3.2"
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      count: ${{ steps.read.outputs.count }}
+      fps: ${{ steps.read.outputs.fps }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: read
+        run: |
+          PLAN="${{ github.event.inputs.plan || 'scenes/demo.json' }}"
+          echo "count=$(python3 -c "import json;print(json.dumps(list(range(len(json.load(open('$PLAN'))['shots']))))))" >> $GITHUB_OUTPUT
+          echo "fps=$(python3 -c "import json;print(json.load(open('$PLAN')).get('fps',24))")" >> $GITHUB_OUTPUT
+          echo "PLAN=$PLAN" >> $GITHUB_ENV
+
+  render:
+    needs: plan
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 20
+      matrix:
+        shot: ${{ fromJSON(needs.plan.outputs.count) }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Blender keshi
+        id: cache-blender
+        uses: actions/cache@v4
+        with:
+          path: ~/blender
+          key: blender-${{ env.BLENDER_VER }}-linux-x64-v1
+
+      - name: Blender o'rnatish
+        if: steps.cache-blender.outputs.cache-hit != 'true'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq curl xz-utils
+          curl -fsSL "https://download.blender.org/release/Blender4.3/blender-${BLENDER_VER}-linux-x64.tar.xz" -o /tmp/b.tar.xz
+          mkdir -p ~/blender
+          tar -xf /tmp/b.tar.xz -C ~/blender --strip-components=1
+          ~/blender/blender --version | head -1
+
+      - name: Kutubxonalar
+        run: |
+          sudo apt-get install -y -qq libx11-6 libxi6 libxxf86vm1 libxfixes3 \
+            libxrender1 libgl1 libegl1 libsm6 libice6 libglib2.0-0 ffmpeg fonts-dejavu-core
+
+      - name: Render (shot ${{ matrix.shot }})
+        run: |
+          PLAN="${{ github.event.inputs.plan || 'scenes/demo.json' }}"
+          mkdir -p frames
+          ~/blender/blender -b -P blender/build_scene.py -- \
+            --plan "$PLAN" --shot ${{ matrix.shot }} --outdir frames \
+            --samples ${{ github.event.inputs.samples || 48 }} \
+            --quality ${{ github.event.inputs.quality || 1.0 }} 2>&1 | tail -20
+          echo "--- kadrlar soni: $(ls frames/*.png 2>/dev/null | wc -l)"
+
+      - name: MP4 ga kodlash
+        run: |
+          FPS=${{ needs.plan.outputs.fps }}
+          if ! ls frames/*.png >/dev/null 2>&1; then echo "KADR YO'Q!"; exit 1; fi
+          ffmpeg -y -v error -framerate $FPS -i frames/f_%04d.png \
+            -c:v libx264 -preset medium -crf 16 -pix_fmt yuv420p clip_${{ matrix.shot }}.mp4
+          ls -lh clip_${{ matrix.shot }}.mp4
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: clip-${{ matrix.shot }}
+          path: clip_${{ matrix.shot }}.mp4
+          retention-days: 3
+
+  compose:
+    needs: [plan, render]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: clip-*
+          merge-multiple: true
+
+      - name: Kutubxonalar
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg fonts-dejavu-core
+
+      - name: Montaj
+        run: |
+          PLAN="${{ github.event.inputs.plan || 'scenes/demo.json' }}"
+          WM="${{ secrets.WATERMARK }}"
+          python3 src/compose.py --plan "$PLAN" --clips-dir . --out final.mp4 \
+            --audio narration.m4a --watermark "$WM"
+          ls -lh final.mp4
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: final-video
+          path: final.mp4
+          retention-days: 7
+
+      - name: Telegram'ga yuborish
+        if: ${{ secrets.TG_BOT_TOKEN != '' }}
+        run: |
+          curl -s -F chat_id="${{ secrets.TG_CHAT_ID }}" \
+               -F video=@final.mp4 \
+               -F caption="Video tayyor: ${{ github.event.inputs.plan }}" \
+               -F supports_streaming=true \
+               "https://api.telegram.org/bot${{ secrets.TG_BOT_TOKEN }}/sendVideo" | head -c 300
