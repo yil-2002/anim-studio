@@ -119,10 +119,10 @@ def make_ground(coll, name="Ground", size=300, dry=False, color=None, color2=Non
         ln = nt.nodes.new("ShaderNodeVectorMath")
         ln.operation = 'LENGTH'
         mr = nt.nodes.new("ShaderNodeMapRange")
-        mr.inputs["From Min"].default_value = 26.0
-        mr.inputs["From Max"].default_value = 150.0
+        mr.inputs["From Min"].default_value = 22.0
+        mr.inputs["From Max"].default_value = 260.0
         haze = nt.nodes.new("ShaderNodeMixRGB")
-        haze.inputs["Color2"].default_value = (0.62, 0.53, 0.36, 1)
+        haze.inputs["Color2"].default_value = (0.50, 0.40, 0.25, 1)
         nt.links.new(tc2.outputs["Object"], ln.inputs[0])
         nt.links.new(ln.outputs["Value"], mr.inputs["Value"])
         nt.links.new(mr.outputs["Result"], haze.inputs["Fac"])
@@ -385,13 +385,13 @@ def make_water(coll, y=8, width=60, length=60, z=-0.35):
     return ob
 
 
-def make_sky_dome(coll, radius=300.0, horizon=(1.00, 0.62, 0.26), mid=(0.17, 0.44, 0.52),
-                  zenith=(0.025, 0.145, 0.330), sun_dir=(0.90, 0.40, 0.21), strength=1.0):
+def make_sky_dome(coll, radius=300.0, horizon=(1.00, 0.55, 0.17), mid=(0.20, 0.40, 0.50),
+                  zenith=(0.020, 0.115, 0.290), sun_dir=(0.90, 0.40, 0.21), strength=1.0):
     """Ichkaridan ko'rinadigan gradient gumbaz: ufqda amber -> tepada teal.
     Object koordinatasi (-1..1) bo'yicha Z gradient — to'liq nazorat, fizika yo'q."""
-    horizon = horizon or (1.00, 0.62, 0.26)
-    mid = mid or (0.17, 0.44, 0.52)
-    zenith = zenith or (0.025, 0.145, 0.330)
+    horizon = horizon or (1.00, 0.55, 0.17)
+    mid = mid or (0.20, 0.40, 0.50)
+    zenith = zenith or (0.020, 0.115, 0.290)
     bm = bmesh.new()
     bmesh.ops.create_uvsphere(bm, u_segments=64, v_segments=32, radius=1.0)
     m = bpy.data.materials.new("sky_dome")
@@ -405,16 +405,16 @@ def make_sky_dome(coll, radius=300.0, horizon=(1.00, 0.62, 0.26), mid=(0.17, 0.4
     sep = nt.nodes.new("ShaderNodeSeparateXYZ")
     mr = nt.nodes.new("ShaderNodeMapRange")
     mr.inputs["From Min"].default_value = -0.10
-    mr.inputs["From Max"].default_value = 0.62
+    mr.inputs["From Max"].default_value = 0.55
     mr.inputs["To Min"].default_value = 0.0
     mr.inputs["To Max"].default_value = 1.0
     ramp = nt.nodes.new("ShaderNodeValToRGB")
     cr = ramp.color_ramp
     cr.elements[0].position = 0.02
     cr.elements[0].color = (*horizon, 1)
-    cr.elements[1].position = 0.30
+    cr.elements[1].position = 0.26
     cr.elements[1].color = (*mid, 1)
-    e3 = cr.elements.new(0.62)
+    e3 = cr.elements.new(0.55)
     e3.color = (*zenith, 1)
     nt.links.new(tc.outputs["Object"], sep.inputs["Vector"])
     nt.links.new(sep.outputs["Z"], mr.inputs["Value"])

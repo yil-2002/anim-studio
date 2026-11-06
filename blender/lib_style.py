@@ -87,7 +87,7 @@ def mat(name, color, rough=0.85, spec=0.25, emit=0.0, noise_scale=0.0,
 # OSMON / WORLD — ekran bo'ylab vertikal gradient + quyosh nuri
 # ----------------------------------------------------------------------------
 def setup_world(scene, sun_dir=(0.92, 0.42, 0.20), warmth=1.0, horizon=None, top=None,
-                strength=0.55, sun_elev=14.0, sun_rot=24.0, dust=0.35):
+                strength=0.40, sun_elev=14.0, sun_rot=24.0, dust=0.35):
     """Nishita fizik osmon: teal -> amber gradient + quyosh halqasi. Cycles CPU'da barqaror."""
     import math
     w = bpy.data.worlds.new("SKY")
