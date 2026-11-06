@@ -36,7 +36,7 @@
      5.8,
      0
     ],
-    "azimuth": 90,
+    "azimuth": 265,
     "amount": 1.0
    },
    "dust": true
@@ -66,7 +66,7 @@
      4.2,
      1.35
     ],
-    "azimuth": 100,
+    "azimuth": 265,
     "amount": 1.0
    },
    "dust": true
@@ -149,7 +149,7 @@
      3.4,
      1.0
     ],
-    "azimuth": 96,
+    "azimuth": 265,
     "amount": 1.0
    },
    "dust": true,
