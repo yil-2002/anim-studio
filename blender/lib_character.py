@@ -109,7 +109,7 @@ def build_man(coll, name="Man", height=1.78, robe_color=None, turban_color=None)
                       scale=(1.0, 0.45, 1.0))
         parts[f"pupil{side}"] = pup
         brow = _sphere(f"{name}_brow{side}", coll, m_dark, 0.020 * s,
-                       (sx * 0.044 * s, fy + 0.004 * s, hz + 0.045 * s), segments=10, rings=6,
+                       (sx * 0.044 * s, fy + 0.004 * s, hz + 0.034 * s), segments=10, rings=6,
                        scale=(1.25, 0.45, 0.30))
         brow.rotation_euler = Euler((0, math.radians(sx * -8), 0))
         parts[f"brow{side}"] = brow
@@ -118,7 +118,7 @@ def build_man(coll, name="Man", height=1.78, robe_color=None, turban_color=None)
                    scale=(0.8, 1.0, 1.1))
     parts["nose"] = nose
     mouth = _sphere(f"{name}_mouth", coll, m_dark, 0.019 * s,
-                    (0, fy - 0.002 * s, hz - 0.045 * s), segments=10, rings=6,
+                    (0, fy - 0.002 * s, hz - 0.042 * s), segments=10, rings=6,
                     scale=(1.5, 0.4, 0.55))
     parts["mouth"] = mouth
     beard = _sphere(f"{name}_beard", coll, m_beard, 0.086 * s,
@@ -132,15 +132,15 @@ def build_man(coll, name="Man", height=1.78, robe_color=None, turban_color=None)
     parts["hair"] = hair
 
     # --- salla ---
-    turban = _sphere(name + "_turban", coll, m_turban, 0.148 * s, (0, 0, 1.685 * s),
-                     segments=20, rings=12, scale=(1.0, 1.0, 0.82))
+    turban = _sphere(name + "_turban", coll, m_turban, 0.150 * s, (0, 0, 1.742 * s),
+                     segments=20, rings=12, scale=(1.0, 1.0, 0.76))
     parts["turban"] = turban
     # salla o'rami (halqa)
     bm = bmesh.new()
     bmesh.ops.create_cone(bm, cap_ends=True, cap_tris=False, segments=20,
                           radius1=0.152 * s, radius2=0.148 * s, depth=0.035 * s)
     band = _add_mesh(bm, name + "_turban_band", coll, m_turban)
-    band.location = (0, 0, 1.625 * s)
+    band.location = (0, 0, 1.678 * s)
     parts["turban_band"] = band
     # yelka ustidagi mato (yelka yopinchig'i)
     bm = bmesh.new()
