@@ -87,7 +87,7 @@ def mat(name, color, rough=0.85, spec=0.25, emit=0.0, noise_scale=0.0,
 # OSMON / WORLD — ekran bo'ylab vertikal gradient + quyosh nuri
 # ----------------------------------------------------------------------------
 def setup_world(scene, sun_dir=(0.92, 0.42, 0.20), warmth=1.0, horizon=None, top=None,
-                strength=0.06, sun_elev=14.0, sun_rot=24.0, dust=0.35):
+                strength=0.55, sun_elev=14.0, sun_rot=24.0, dust=0.35):
     """Nishita fizik osmon: teal -> amber gradient + quyosh halqasi. Cycles CPU'da barqaror."""
     import math
     w = bpy.data.worlds.new("SKY")
@@ -111,7 +111,7 @@ def setup_world(scene, sun_dir=(0.92, 0.42, 0.20), warmth=1.0, horizon=None, top
         nt.links.new(sky.outputs["Color"], bg.inputs["Color"])
     except (AttributeError, TypeError) as e:
         print("SKY fallback:", e, flush=True)
-        bg.inputs["Color"].default_value = (0.34, 0.42, 0.46, 1)
+        bg.inputs["Color"].default_value = (0.42, 0.50, 0.62, 1)
     bg.inputs["Strength"].default_value = strength
     nt.links.new(bg.outputs["Background"], out.inputs["Surface"])
     print("WORLD: nishita", flush=True)
@@ -135,7 +135,7 @@ def setup_lights(sun_dir=(0.90, 0.40, 0.21), energy=3.0, warm=1.0):
 
     # sovuq to'ldiruvchi (osmondan aks) — soyalarni o'lik qora bo'lishdan saqlaydi
     ld2 = bpy.data.lights.new("FILL", type='AREA')
-    ld2.energy = 9.0
+    ld2.energy = 12.0
     ld2.size = 14.0
     ld2.color = (0.60, 0.74, 0.92)
     fill = bpy.data.objects.new("FILL", ld2)
