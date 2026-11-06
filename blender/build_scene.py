@@ -62,8 +62,8 @@ def build(plan, shot, outdir, samples=6, preview=None, quality=None, gpu=False,
     print("STAGE: env start", flush=True)
     # ---------------- YER / FON ----------------
     NA.make_ground(c_env, size=340, dry=dry,
-                   color=tuple(shot.get("ground_color", (0.075, 0.135, 0.050))),
-                   color2=tuple(shot.get("ground_color2", (0.150, 0.235, 0.090))))
+                   color=tuple(shot.get("ground_color", (0.9, 0.05, 0.9))),
+                   color2=tuple(shot.get("ground_color2", (0.6, 0.02, 0.7))))
     try:
         gm = bpy.data.materials.get("ground_Ground")
         bc = gm.node_tree.nodes["Principled BSDF"].inputs["Base Color"].default_value
@@ -172,12 +172,12 @@ def build(plan, shot, outdir, samples=6, preview=None, quality=None, gpu=False,
         bpy.ops.render.render(write_still=True)
         print("PREVIEW:", sc.render.filepath)
         try:
-            for ob in list(bpy.data.objects)[:14]:
+            for ob in bpy.data.objects:
                 if ob.type == 'MESH' and ob.data.materials:
                     mm = ob.data.materials[0]
                     bs = mm.node_tree.nodes.get("Principled BSDF")
                     bc = bs.inputs["Base Color"].default_value if bs else (0, 0, 0, 0)
-                    print("OBJ", ob.name, mm.name, [round(v, 3) for v in bc[:3]], flush=True)
+                    print("OBJ", ob.name, mm.name, [round(v, 3) for v in bc[:3]], "at", [round(v,1) for v in ob.location], flush=True)
         except Exception as e:
             print("dbg fail", e, flush=True)
     else:
