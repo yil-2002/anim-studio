@@ -107,7 +107,7 @@ def make_ground(coll, name="Ground", size=300, dry=False, color=None):
             v.co.z += noise.noise(Vector((v.co.x * 0.5, v.co.y * 0.5, 2.0))) * 0.05
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
     c1 = color or (PALETTE["dirt"] if dry else PALETTE["ground"])
-    c2 = (0.290, 0.250, 0.120) if not dry else (0.300, 0.225, 0.130)
+    c2 = (0.125, 0.190, 0.075) if not dry else (0.230, 0.180, 0.100)
     m = mat(f"ground_{name}", c1, rough=0.96, spec=0.04,
             noise_scale=2.6, noise_amount=0.22, second=c2)
     return _obj_from_bm(bm, name, coll, m)
