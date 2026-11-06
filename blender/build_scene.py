@@ -61,7 +61,9 @@ def build(plan, shot, outdir, samples=6, preview=None, quality=None, gpu=False,
 
     print("STAGE: env start", flush=True)
     # ---------------- YER / FON ----------------
-    NA.make_ground(c_env, size=340, dry=dry)
+    NA.make_ground(c_env, size=340, dry=dry,
+                   color=tuple(shot.get("ground_color", (0.075, 0.135, 0.050))),
+                   color2=tuple(shot.get("ground_color2", (0.150, 0.235, 0.090))))
     try:
         gm = bpy.data.materials.get("ground_Ground")
         bc = gm.node_tree.nodes["Principled BSDF"].inputs["Base Color"].default_value
@@ -71,7 +73,7 @@ def build(plan, shot, outdir, samples=6, preview=None, quality=None, gpu=False,
     if not dry:
         NA.make_grass_tufts(c_env, count=int(shot.get("grass", 420) * q),
                             radius=shot.get("grass_radius", 22), seed=seed)
-    NA.make_hills(c_env, count=max(3, int(6 * q)), radius=46, seed=seed + 1)
+    NA.make_hills(c_env, count=max(3, int(6 * q)), radius=115, seed=seed + 1)
     NA.make_far_trees(c_env, count=int(shot.get("far_trees", 40) * q), radius=34,
                       seed=seed + 2, dry=dry)
     print("STAGE: far trees ok", flush=True)
@@ -169,6 +171,15 @@ def build(plan, shot, outdir, samples=6, preview=None, quality=None, gpu=False,
         sc.render.filepath = os.path.join(outdir, f"preview_{int(preview):04d}.png")
         bpy.ops.render.render(write_still=True)
         print("PREVIEW:", sc.render.filepath)
+        try:
+            for ob in list(bpy.data.objects)[:14]:
+                if ob.type == 'MESH' and ob.data.materials:
+                    mm = ob.data.materials[0]
+                    bs = mm.node_tree.nodes.get("Principled BSDF")
+                    bc = bs.inputs["Base Color"].default_value if bs else (0, 0, 0, 0)
+                    print("OBJ", ob.name, mm.name, [round(v, 3) for v in bc[:3]], flush=True)
+        except Exception as e:
+            print("dbg fail", e, flush=True)
     else:
         bpy.ops.render.render(animation=True)
         print("RENDERED:", outdir, dur_f, "frames")

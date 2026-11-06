@@ -97,7 +97,7 @@ def _taper_segment(bm, p0, p1, r0, r1, segs=8):
 # ============================================================================
 # YER
 # ============================================================================
-def make_ground(coll, name="Ground", size=300, dry=False, color=None):
+def make_ground(coll, name="Ground", size=300, dry=False, color=None, color2=None):
     bm = bmesh.new()
     bmesh.ops.create_grid(bm, x_segments=48, y_segments=48, size=size / 2)
     for v in bm.verts:
@@ -107,7 +107,7 @@ def make_ground(coll, name="Ground", size=300, dry=False, color=None):
             v.co.z += noise.noise(Vector((v.co.x * 0.5, v.co.y * 0.5, 2.0))) * 0.05
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
     c1 = color or (PALETTE["dirt"] if dry else PALETTE["ground"])
-    c2 = (0.125, 0.190, 0.075) if not dry else (0.230, 0.180, 0.100)
+    c2 = color2 or ((0.125, 0.190, 0.075) if not dry else (0.230, 0.180, 0.100))
     m = mat(f"ground_{name}", c1, rough=0.96, spec=0.04,
             noise_scale=2.6, noise_amount=0.22, second=c2)
     return _obj_from_bm(bm, name, coll, m)
@@ -266,7 +266,7 @@ def add_wind(tree, strength=0.035, seed=0):
 # ============================================================================
 # FON: tepaliklar, uzoq daraxtlar, bulutlar, quyosh diski
 # ============================================================================
-def make_hills(coll, count=6, radius=165, seed=5):
+def make_hills(coll, count=6, radius=115, seed=5):
     rnd = random.Random(seed)
     m = mat("hill", (0.058, 0.118, 0.112), rough=1.0, spec=0.0, emit=0.0)
     out = []
@@ -275,8 +275,8 @@ def make_hills(coll, count=6, radius=165, seed=5):
         d = radius * rnd.uniform(0.75, 1.05)
         bm = blob(1.0, subdiv=2, irregular=0.10, seed=i, squash=(1, 1, 1))
         ob = _obj_from_bm(bm, f"hill{i}", coll, m)
-        ob.location = (math.cos(a) * d, math.sin(a) * d, -13.0 + rnd.uniform(-1, 1))
-        ob.scale = (rnd.uniform(45, 65), rnd.uniform(35, 50), rnd.uniform(13, 19))
+        ob.location = (math.cos(a) * d, math.sin(a) * d, -6.5 + rnd.uniform(-0.8, 0.8))
+        ob.scale = (rnd.uniform(26, 36), rnd.uniform(22, 30), rnd.uniform(9, 13))
         out.append(ob)
     return out
 
