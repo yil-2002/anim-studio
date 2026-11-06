@@ -36,7 +36,7 @@
      5.8,
      1.75
     ],
-    "azimuth": 95,
+    "azimuth": 90,
     "amount": 1.0
    },
    "dust": true
@@ -60,13 +60,13 @@
    },
    "cam": {
     "type": "medium",
-    "move": "pan_lr",
+    "move": "push_in",
     "target": [
      0.4,
      4.2,
-     1.75
+     1.55
     ],
-    "azimuth": 95,
+    "azimuth": 90,
     "amount": 1.0
    },
    "dust": true
@@ -149,7 +149,7 @@
      3.4,
      1.75
     ],
-    "azimuth": 95,
+    "azimuth": 90,
     "amount": 1.0
    },
    "dust": true,
