@@ -155,6 +155,27 @@ def build(plan, shot, outdir, samples=6, preview=None, quality=None, gpu=False,
     dur_f = int(round(shot["dur"] * fps))
     CAm.animate_shot(cam, shot.get("cam", {}), 1, dur_f)
 
+    # --- portret kalit yorug'lik: har doim kameraga yaqin, yuz ko'rinsin ---
+    if man is not None:
+        import mathutils
+        tgt = mathutils.Vector(man["root"].location) + mathutils.Vector((0, 0, 1.45))
+        cpos = mathutils.Vector(cam.location)
+        d = (tgt - cpos)
+        if d.length > 1e-4:
+            d.normalize()
+            lp = tgt - d * 2.6 + mathutils.Vector((0, 0, 0.55))
+            ldata = bpy.data.lights.new("KEY", type='AREA')
+            ldata.energy = 55.0
+            ldata.size = 2.2
+            ldata.color = (1.0, 0.94, 0.86)
+            ldata.use_shadow = False
+            lo = bpy.data.objects.new("KEY", ldata)
+            c_fx.objects.link(lo)
+            lo.location = lp
+            lo.rotation_euler = (tgt - lp).to_track_quat('-Z', 'Y').to_euler()
+            lo.visible_camera = False
+            print("STAGE: key light ok", flush=True)
+
     sc.frame_start = frame_start or 1
     sc.frame_end = frame_end or dur_f
     sc.frame_current = 1
