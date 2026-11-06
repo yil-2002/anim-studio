@@ -47,7 +47,7 @@ def build(plan, shot, outdir, samples=6, preview=None, quality=None, gpu=False,
     ST.setup_world(sc, sun_dir=sun_dir,
                    horizon=shot.get("sky_horizon"),
                    top=shot.get("sky_top"))
-    ST.setup_lights(sun_dir=sun_dir, energy=shot.get("sun_energy", 2.1))
+    ST.setup_lights(sun_dir=sun_dir, energy=shot.get("sun_energy", 1.7))
 
     c_env = ST.new_collection("ENV")
     c_act = ST.new_collection("ACTOR")
