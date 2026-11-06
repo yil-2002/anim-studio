@@ -10,8 +10,10 @@ def frame_counts(plan):
     return [max(1, int(round(float(s["dur"]) * fps))) for s in plan["shots"]]
 
 
-def build_tasks(plan, target=28):
+def build_tasks(plan, target=28, preview=False):
     """Har bir bo'lak: {"shot": i, "fs": a, "fe": b, "idx": k} (kadr raqamlari shot ichida)."""
+    if preview:
+        return [{"shot": 0, "fs": 1, "fe": 1, "idx": 0}]
     tasks = []
     for si, n in enumerate(frame_counts(plan)):
         f = 1
@@ -26,7 +28,8 @@ if __name__ == "__main__":
     plan_path = os.environ.get("PLAN", "scenes/demo.json")
     target = int(os.environ.get("CHUNK", "28"))
     plan = json.load(open(plan_path, encoding="utf-8"))
-    tasks = build_tasks(plan, target)
+    prev = os.environ.get("PREVIEW", "0") == "1"
+    tasks = build_tasks(plan, target, preview=prev)
     total = sum(frame_counts(plan))
     print("matrix=" + json.dumps(tasks))
     print("nslots=" + str(len(tasks)))

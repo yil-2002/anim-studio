@@ -48,6 +48,7 @@ jobs:
         env:
           PLAN: ${{ github.event.inputs.plan || 'scenes/demo.json' }}
           CHUNK: ${{ github.event.inputs.chunk || '28' }}
+          PREVIEW: ${{ github.event.inputs.preview || '0' }}
         run: python3 src/plan_info.py >> $GITHUB_OUTPUT
 
   render:
