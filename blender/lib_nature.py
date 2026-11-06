@@ -461,5 +461,9 @@ def make_sun_disc(coll, sun_dir=(0.90, 0.40, 0.21), dist=260.0, radius=7.5, glow
         ob = _obj_from_bm(bm, name, coll, m)
         ob.location = d * dist
         ob.visible_shadow = False
+        ob.visible_diffuse = False
+        ob.visible_glossy = False
+        ob.visible_transmission = False
+        ob.visible_volume_scatter = False
         objs.append(ob)
     return objs

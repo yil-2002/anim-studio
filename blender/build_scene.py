@@ -62,7 +62,12 @@ def build(plan, shot, outdir, samples=6, preview=None, quality=None, gpu=False,
     print("STAGE: env start", flush=True)
     # ---------------- YER / FON ----------------
     NA.make_ground(c_env, size=340, dry=dry)
-    print("STAGE: ground ok", flush=True)
+    try:
+        gm = bpy.data.materials.get("ground_Ground")
+        bc = gm.node_tree.nodes["Principled BSDF"].inputs["Base Color"].default_value
+        print("STAGE: ground ok | color=", [round(v, 3) for v in bc[:3]], flush=True)
+    except Exception as e:
+        print("STAGE: ground ok | debug fail", e, flush=True)
     if not dry:
         NA.make_grass_tufts(c_env, count=int(shot.get("grass", 420) * q),
                             radius=shot.get("grass_radius", 22), seed=seed)

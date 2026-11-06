@@ -87,7 +87,7 @@ def mat(name, color, rough=0.85, spec=0.25, emit=0.0, noise_scale=0.0,
 # OSMON / WORLD — ekran bo'ylab vertikal gradient + quyosh nuri
 # ----------------------------------------------------------------------------
 def setup_world(scene, sun_dir=(0.92, 0.42, 0.20), warmth=1.0, horizon=None, top=None,
-                strength=0.32, sun_elev=11.0, sun_rot=24.0, dust=1.4):
+                strength=0.55, sun_elev=9.0, sun_rot=24.0, dust=0.9):
     """Nishita fizik osmon: teal -> amber gradient + quyosh halqasi. Cycles CPU'da barqaror."""
     import math
     w = bpy.data.worlds.new("SKY")
@@ -105,9 +105,9 @@ def setup_world(scene, sun_dir=(0.92, 0.42, 0.20), warmth=1.0, horizon=None, top
         sky.sun_rotation = math.radians(sun_rot)
         sky.sun_intensity = 1.8
         sky.altitude = 120.0
-        sky.air_density = 1.1
+        sky.air_density = 1.0
         sky.dust_density = dust
-        sky.ozone_density = 2.0
+        sky.ozone_density = 0.6
         nt.links.new(sky.outputs["Color"], bg.inputs["Color"])
     except (AttributeError, TypeError) as e:
         print("SKY fallback:", e, flush=True)
