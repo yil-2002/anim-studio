@@ -23,8 +23,8 @@ PALETTE = {
     "leaf_b":       (0.155, 0.310, 0.105),
     "leaf_dry":     (0.300, 0.235, 0.095),
     "fruit":        (0.520, 0.038, 0.052),
-    "robe":         (0.720, 0.690, 0.610),
-    "turban":       (0.880, 0.865, 0.800),
+    "robe":         (0.560, 0.535, 0.470),
+    "turban":       (0.700, 0.685, 0.630),
     "skin":         (0.700, 0.500, 0.360),
     "dirt":         (0.260, 0.190, 0.110),
     "water":        (0.070, 0.240, 0.270),
@@ -135,7 +135,7 @@ def setup_lights(sun_dir=(0.90, 0.40, 0.21), energy=3.0, warm=1.0):
 
     # sovuq to'ldiruvchi (osmondan aks) — soyalarni o'lik qora bo'lishdan saqlaydi
     ld2 = bpy.data.lights.new("FILL", type='AREA')
-    ld2.energy = 12.0
+    ld2.energy = 22.0
     ld2.size = 14.0
     ld2.color = (0.60, 0.74, 0.92)
     fill = bpy.data.objects.new("FILL", ld2)
