@@ -78,7 +78,7 @@ def build(plan, shot, outdir, samples=6, preview=None, quality=None, gpu=False,
         NA.make_sky_dome(c_env, horizon=shot.get("sky_horizon"),
                          zenith=shot.get("sky_top"), sun_dir=sun_dir)
         print("STAGE: skydome ok", flush=True)
-    NAT.make_sun_disc(c_cam, tuple(shot.get("sun_dir", [0.90, 0.40, 0.21])))
+    NA.make_sun_disc(c_cam, tuple(shot.get("sun_dir", [0.90, 0.40, 0.21])))
     print("STAGE: sun disc ok", flush=True)
 
     # ---------------- DARAXTLAR ----------------
