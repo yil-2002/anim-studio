@@ -121,24 +121,24 @@ def build_man(coll, name="Man", height=1.78, robe_color=None, turban_color=None)
                     (0, fy - 0.002 * s, hz - 0.042 * s), segments=10, rings=6,
                     scale=(1.5, 0.4, 0.55))
     parts["mouth"] = mouth
-    beard = _sphere(f"{name}_beard", coll, m_beard, 0.086 * s,
-                    (0, -0.058 * s, hz - 0.070 * s), segments=16, rings=12,
-                    scale=(1.02, 0.80, 1.05))
+    beard = _sphere(f"{name}_beard", coll, m_beard, 0.062 * s,
+                    (0, -0.048 * s, hz - 0.062 * s), segments=16, rings=12,
+                    scale=(1.05, 0.72, 1.15))
     parts["beard"] = beard
     # bosh kiyim ostidagi soch chizig'i
-    hair = _sphere(f"{name}_hair", coll, m_beard, 0.104 * s,
-                   (0, 0.010 * s, hz + 0.030 * s), segments=16, rings=10,
-                   scale=(1.0, 1.0, 0.62))
+    hair = _sphere(f"{name}_hair", coll, m_beard, 0.098 * s,
+                   (0, 0.030 * s, hz + 0.048 * s), segments=16, rings=10,
+                   scale=(1.0, 0.95, 0.50))
     parts["hair"] = hair
 
     # --- salla ---
-    turban = _sphere(name + "_turban", coll, m_turban, 0.150 * s, (0, 0, 1.742 * s),
+    turban = _sphere(name + "_turban", coll, m_turban, 0.138 * s, (0, 0, 1.730 * s),
                      segments=20, rings=12, scale=(1.0, 1.0, 0.76))
     parts["turban"] = turban
     # salla o'rami (halqa)
     bm = bmesh.new()
     bmesh.ops.create_cone(bm, cap_ends=True, cap_tris=False, segments=20,
-                          radius1=0.152 * s, radius2=0.148 * s, depth=0.035 * s)
+                          radius1=0.140 * s, radius2=0.136 * s, depth=0.032 * s)
     band = _add_mesh(bm, name + "_turban_band", coll, m_turban)
     band.location = (0, 0, 1.678 * s)
     parts["turban_band"] = band
