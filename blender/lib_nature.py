@@ -366,6 +366,9 @@ def make_sky_dome(coll, radius=300.0, horizon=(1.00, 0.66, 0.30), mid=(0.42, 0.6
                   zenith=(0.045, 0.300, 0.470), sun_dir=(0.90, 0.40, 0.21), strength=1.0):
     """Ichkaridan ko'rinadigan gradient gumbaz: ufqda amber -> tepada teal.
     Object koordinatasi (-1..1) bo'yicha Z gradient — to'liq nazorat, fizika yo'q."""
+    horizon = horizon or (1.00, 0.66, 0.30)
+    mid = mid or (0.42, 0.62, 0.62)
+    zenith = zenith or (0.045, 0.300, 0.470)
     bm = bmesh.new()
     bmesh.ops.create_uvsphere(bm, u_segments=64, v_segments=32, radius=1.0)
     m = bpy.data.materials.new("sky_dome")
