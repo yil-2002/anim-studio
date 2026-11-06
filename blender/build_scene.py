@@ -62,8 +62,8 @@ def build(plan, shot, outdir, samples=6, preview=None, quality=None, gpu=False,
     print("STAGE: env start", flush=True)
     # ---------------- YER / FON ----------------
     NA.make_ground(c_env, size=340, dry=dry,
-                   color=tuple(shot.get("ground_color", (0.085, 0.140, 0.055))),
-                   color2=tuple(shot.get("ground_color2", (0.165, 0.245, 0.095))))
+                   color=tuple(shot.get("ground_color", (0.062, 0.150, 0.038))),
+                   color2=tuple(shot.get("ground_color2", (0.125, 0.265, 0.070))))
     try:
         gm = bpy.data.materials.get("ground_Ground")
         bc = gm.node_tree.nodes["Principled BSDF"].inputs["Base Color"].default_value
@@ -73,7 +73,8 @@ def build(plan, shot, outdir, samples=6, preview=None, quality=None, gpu=False,
     if not dry:
         NA.make_grass_tufts(c_env, count=int(shot.get("grass", 420) * q),
                             radius=shot.get("grass_radius", 22), seed=seed)
-    NA.make_hills(c_env, count=max(3, int(6 * q)), radius=150, seed=seed + 1)
+    if shot.get("hills", False):
+        NA.make_hills(c_env, count=max(3, int(6 * q)), radius=150, seed=seed + 1)
     NA.make_far_trees(c_env, count=int(shot.get("far_trees", 40) * q), radius=34,
                       seed=seed + 2, dry=dry)
     print("STAGE: far trees ok", flush=True)
