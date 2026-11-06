@@ -152,7 +152,7 @@ def setup_lights(sun_dir=(0.90, 0.40, 0.21), energy=3.0, warm=1.0):
 # RENDER SOZLAMALARI
 # ----------------------------------------------------------------------------
 def setup_render(scene, res=(720, 1280), samples=4, fps=24, mist=True,
-                 view_transform='Standard', exposure=0.0):
+                 view_transform='Standard', exposure=-1.15):
     # ENG MUHIM: EEVEE GPU kontekst talab qiladi va headless runner'da crash bo'ladi.
     scene.render.engine = 'CYCLES'
     try:

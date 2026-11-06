@@ -266,17 +266,17 @@ def add_wind(tree, strength=0.035, seed=0):
 # ============================================================================
 # FON: tepaliklar, uzoq daraxtlar, bulutlar, quyosh diski
 # ============================================================================
-def make_hills(coll, count=6, radius=115, seed=5):
+def make_hills(coll, count=6, radius=150, seed=5):
     rnd = random.Random(seed)
-    m = mat("hill", (0.058, 0.118, 0.112), rough=1.0, spec=0.0, emit=0.0)
+    m = mat("hill", (0.105, 0.170, 0.150), rough=1.0, spec=0.0, emit=0.0)
     out = []
     for i in range(count):
         a = math.pi * (0.08 + 0.84 * i / max(1, count - 1))
         d = radius * rnd.uniform(0.75, 1.05)
         bm = blob(1.0, subdiv=2, irregular=0.10, seed=i, squash=(1, 1, 1))
         ob = _obj_from_bm(bm, f"hill{i}", coll, m)
-        ob.location = (math.cos(a) * d, math.sin(a) * d, -6.5 + rnd.uniform(-0.8, 0.8))
-        ob.scale = (rnd.uniform(26, 36), rnd.uniform(22, 30), rnd.uniform(9, 13))
+        ob.location = (math.cos(a) * d, math.sin(a) * d, -9.5 + rnd.uniform(-0.6, 0.6))
+        ob.scale = (rnd.uniform(30, 42), rnd.uniform(26, 34), rnd.uniform(11, 15))
         out.append(ob)
     return out
 

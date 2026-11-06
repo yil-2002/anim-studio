@@ -73,7 +73,7 @@ def build(plan, shot, outdir, samples=6, preview=None, quality=None, gpu=False,
     if not dry:
         NA.make_grass_tufts(c_env, count=int(shot.get("grass", 420) * q),
                             radius=shot.get("grass_radius", 22), seed=seed)
-    NA.make_hills(c_env, count=max(3, int(6 * q)), radius=115, seed=seed + 1)
+    NA.make_hills(c_env, count=max(3, int(6 * q)), radius=150, seed=seed + 1)
     NA.make_far_trees(c_env, count=int(shot.get("far_trees", 40) * q), radius=34,
                       seed=seed + 2, dry=dry)
     print("STAGE: far trees ok", flush=True)
