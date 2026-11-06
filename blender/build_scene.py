@@ -172,15 +172,6 @@ def build(plan, shot, outdir, samples=6, preview=None, quality=None, gpu=False,
         sc.render.filepath = os.path.join(outdir, f"preview_{int(preview):04d}.png")
         bpy.ops.render.render(write_still=True)
         print("PREVIEW:", sc.render.filepath)
-        try:
-            for ob in bpy.data.objects:
-                if ob.type == 'MESH' and ob.data.materials:
-                    mm = ob.data.materials[0]
-                    bs = mm.node_tree.nodes.get("Principled BSDF")
-                    bc = bs.inputs["Base Color"].default_value if bs else (0, 0, 0, 0)
-                    print("OBJ", ob.name, mm.name, [round(v, 3) for v in bc[:3]], "at", [round(v,1) for v in ob.location], flush=True)
-        except Exception as e:
-            print("dbg fail", e, flush=True)
     else:
         bpy.ops.render.render(animation=True)
         print("RENDERED:", outdir, dur_f, "frames")
