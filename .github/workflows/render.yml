@@ -164,14 +164,22 @@ jobs:
           PLAN="${{ github.event.inputs.plan || 'scenes/demo.json' }}"
           WM="${{ secrets.WATERMARK }}"
           CHUNK="${{ github.event.inputs.chunk || '28' }}"
-          python3 src/compose.py --plan "$PLAN" --out final.mp4 \
-            --segments . --chunk "$CHUNK" --audio narration.m4a --watermark "$WM"
+          if [ "${{ github.event.inputs.preview }}" = "1" ]; then
+            echo "PREVIEW: faqat 1 kadr — montajsiz"
+            ffmpeg -y -v error -i seg_0.mp4 -frames:v 1 -update 1 preview.png
+            cp seg_0.mp4 final.mp4
+          else
+            python3 src/compose.py --plan "$PLAN" --out final.mp4 \
+              --segments . --chunk "$CHUNK" --audio narration.m4a --watermark "$WM"
+          fi
           ls -lh final.mp4
 
       - uses: actions/upload-artifact@v4
         with:
           name: final-video
-          path: final.mp4
+          path: |
+            final.mp4
+            preview.png
           retention-days: 7
 
       - name: Telegram'ga yuborish
