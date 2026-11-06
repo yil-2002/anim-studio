@@ -439,3 +439,27 @@ def make_sky_dome(coll, radius=220, horizon=(1.00, 0.60, 0.26),
     me.materials.append(m)
     ob.location = (0, 0, 0)
     return ob
+
+
+def make_sun_disc(coll, sun_dir=(0.90, 0.40, 0.21), dist=260.0, radius=7.5, glow=24.0):
+    """Ko'rinadigan quyosh diski + yumshoq halo (osmon gradientidan mustaqil)."""
+    d = Vector(sun_dir).normalized()
+    objs = []
+    for name, r, emit, eps in (("SUN_DISC", radius, glow, 0.9),
+                               ("SUN_GLOW", radius * 3.6, glow * 0.16, 0.5),
+                               ("SUN_GLOW2", radius * 8.0, glow * 0.05, 0.35)):
+        bm = bmesh.new()
+        bmesh.ops.create_icosphere(bm, subdivisions=3, radius=r)
+        m = bpy.data.materials.new("m_" + name)
+        m.use_nodes = True
+        nt = m.node_tree
+        bsdf = nt.nodes.get("Principled BSDF")
+        bsdf.inputs["Base Color"].default_value = (1.0, 0.86, 0.58, 1)
+        bsdf.inputs["Emission Color"].default_value = (1.0, 0.84, 0.55, 1)
+        bsdf.inputs["Emission Strength"].default_value = emit
+        bsdf.inputs["Roughness"].default_value = 1.0
+        ob = _obj_from_bm(bm, name, coll, m)
+        ob.location = d * dist
+        ob.visible_shadow = False
+        objs.append(ob)
+    return objs

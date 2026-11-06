@@ -87,7 +87,7 @@ def mat(name, color, rough=0.85, spec=0.25, emit=0.0, noise_scale=0.0,
 # OSMON / WORLD — ekran bo'ylab vertikal gradient + quyosh nuri
 # ----------------------------------------------------------------------------
 def setup_world(scene, sun_dir=(0.92, 0.42, 0.20), warmth=1.0, horizon=None, top=None,
-                strength=1.25, sun_elev=12.0, sun_rot=24.0, dust=1.1):
+                strength=0.32, sun_elev=11.0, sun_rot=24.0, dust=1.4):
     """Nishita fizik osmon: teal -> amber gradient + quyosh halqasi. Cycles CPU'da barqaror."""
     import math
     w = bpy.data.worlds.new("SKY")
@@ -121,7 +121,7 @@ def setup_world(scene, sun_dir=(0.92, 0.42, 0.20), warmth=1.0, horizon=None, top
 # ----------------------------------------------------------------------------
 # YORUG'LIK
 # ----------------------------------------------------------------------------
-def setup_lights(sun_dir=(0.90, 0.40, 0.21), energy=4.5, warm=1.0):
+def setup_lights(sun_dir=(0.90, 0.40, 0.21), energy=3.0, warm=1.0):
     d = Vector(sun_dir).normalized()
     ld = bpy.data.lights.new("SUN", type='SUN')
     ld.energy = energy
@@ -152,7 +152,7 @@ def setup_lights(sun_dir=(0.90, 0.40, 0.21), energy=4.5, warm=1.0):
 # RENDER SOZLAMALARI
 # ----------------------------------------------------------------------------
 def setup_render(scene, res=(720, 1280), samples=4, fps=24, mist=True,
-                 view_transform='Standard', exposure=0.05):
+                 view_transform='Standard', exposure=0.0):
     # ENG MUHIM: EEVEE GPU kontekst talab qiladi va headless runner'da crash bo'ladi.
     scene.render.engine = 'CYCLES'
     try:
