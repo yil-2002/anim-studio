@@ -137,7 +137,16 @@ def setup_lights(sun_dir=(0.92, 0.42, 0.20), energy=6.0, warm=1.0):
 # ----------------------------------------------------------------------------
 def setup_render(scene, res=(720, 1280), samples=4, fps=24, mist=True,
                  view_transform='Standard', exposure=0.05):
+    # ENG MUHIM: EEVEE GPU kontekst talab qiladi va headless runner'da crash bo'ladi.
+    scene.render.engine = 'CYCLES'
+    try:
+        scene.cycles.device = 'CPU'
+        scene.cycles.use_adaptive_sampling = True
+        scene.cycles.adaptive_threshold = 0.02
+    except AttributeError:
+        pass
     r = scene.render
+    print("ENGINE:", r.engine, "| device:", scene.cycles.device if hasattr(scene,'cycles') else '?', flush=True)
     r.resolution_x, r.resolution_y = res
     r.resolution_percentage = 100
     r.fps = fps
