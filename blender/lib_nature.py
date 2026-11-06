@@ -362,86 +362,44 @@ def make_water(coll, y=8, width=60, length=60, z=-0.35):
     return ob
 
 
-def make_sky_dome(coll, radius=220, horizon=(1.00, 0.60, 0.26),
-                  zenith=(0.016, 0.080, 0.110), mid=(0.055, 0.190, 0.215),
-                  strength=2.1, sun_dir=(0.92, 0.42, 0.20)):
-    """Osmon gumbazi: haqiqiy geometriya + emission gradient.
-    World node'lariga bog'liq emas — har qanday kamerada bir xil chiqadi."""
-    import bmesh
-    from mathutils import Vector as _V
-
-    horizon = horizon or (1.00, 0.60, 0.26)
-    zenith = zenith or (0.016, 0.080, 0.110)
-    mid = mid or (0.055, 0.190, 0.215)
+def make_sky_dome(coll, radius=300.0, horizon=(1.00, 0.66, 0.30), mid=(0.42, 0.62, 0.62),
+                  zenith=(0.045, 0.300, 0.470), sun_dir=(0.90, 0.40, 0.21), strength=1.0):
+    """Ichkaridan ko'rinadigan gradient gumbaz: ufqda amber -> tepada teal.
+    Object koordinatasi (-1..1) bo'yicha Z gradient — to'liq nazorat, fizika yo'q."""
     bm = bmesh.new()
-    bmesh.ops.create_uvsphere(bm, u_segments=40, v_segments=20, radius=radius)
-    bmesh.ops.reverse_faces(bm, faces=bm.faces)
-    me = bpy.data.meshes.new("skydome")
-    bm.to_mesh(me)
-    bm.free()
-    for p in me.polygons:
-        p.use_smooth = True
-    ob = bpy.data.objects.new("SkyDome", me)
-    coll.objects.link(ob)
-    # MUHIM: gumbaz faqat KAMERAGA ko'rinadi — yorug'lik manbai emas (aks holda render osilib qoladi)
-    ob.visible_shadow = False
-    ob.visible_diffuse = False
-    ob.visible_glossy = False
-    ob.visible_transmission = False
-    ob.visible_volume_scatter = False
-
-    m = bpy.data.materials.new("skydome_mat")
+    bmesh.ops.create_uvsphere(bm, u_segments=64, v_segments=32, radius=1.0)
+    m = bpy.data.materials.new("sky_dome")
     m.use_nodes = True
     nt = m.node_tree
     nt.nodes.clear()
     out = nt.nodes.new("ShaderNodeOutputMaterial")
     em = nt.nodes.new("ShaderNodeEmission")
     em.inputs["Strength"].default_value = strength
-
     tc = nt.nodes.new("ShaderNodeTexCoord")
+    sep = nt.nodes.new("ShaderNodeSeparateXYZ")
     mr = nt.nodes.new("ShaderNodeMapRange")
-    mr.inputs["From Min"].default_value = -0.02
-    mr.inputs["From Max"].default_value = 0.28
-    mr.clamp = True
-    sepxyz = nt.nodes.new("ShaderNodeSeparateXYZ")
-    nt.links.new(tc.outputs["Object"], sepxyz.inputs["Vector"])
-    nt.links.new(sepxyz.outputs["Z"], mr.inputs["Value"])
-
+    mr.inputs["From Min"].default_value = -0.10
+    mr.inputs["From Max"].default_value = 0.55
+    mr.inputs["To Min"].default_value = 0.0
+    mr.inputs["To Max"].default_value = 1.0
     ramp = nt.nodes.new("ShaderNodeValToRGB")
     cr = ramp.color_ramp
-    cr.interpolation = 'EASE'
-    cr.elements[0].position = 0.0
+    cr.elements[0].position = 0.02
     cr.elements[0].color = (*horizon, 1)
-    cr.elements[1].position = 1.0
-    cr.elements[1].color = (*zenith, 1)
-    for pos, col in ((0.18, (0.95, 0.42, 0.14)),
-                     (0.40, (0.22, 0.30, 0.24)),
-                     (0.65, mid)):
-        e = cr.elements.new(pos)
-        e.color = (*col, 1)
+    cr.elements[1].position = 0.42
+    cr.elements[1].color = (*mid, 1)
+    e3 = cr.elements.new(0.86)
+    e3.color = (*zenith, 1)
+    nt.links.new(tc.outputs["Object"], sep.inputs["Vector"])
+    nt.links.new(sep.outputs["Z"], mr.inputs["Value"])
     nt.links.new(mr.outputs["Result"], ramp.inputs["Fac"])
-
-    # quyosh halqasi
-    geo = nt.nodes.new("ShaderNodeNewGeometry")
-    dot = nt.nodes.new("ShaderNodeVectorMath")
-    dot.operation = 'DOT_PRODUCT'
-    dot.inputs[1].default_value = -_V(sun_dir).normalized()   # Incoming teskari
-    nt.links.new(geo.outputs["Incoming"], dot.inputs[0])
-    mr2 = nt.nodes.new("ShaderNodeMapRange")
-    mr2.inputs["From Min"].default_value = 0.90
-    mr2.inputs["From Max"].default_value = 1.0
-    mr2.clamp = True
-    nt.links.new(dot.outputs["Value"], mr2.inputs["Value"])
-    mix = nt.nodes.new("ShaderNodeMixRGB")
-    mix.blend_type = 'ADD'
-    mix.inputs["Color2"].default_value = (1.0, 0.70, 0.34, 1)
-    nt.links.new(ramp.outputs["Color"], mix.inputs["Color1"])
-    nt.links.new(mr2.outputs["Result"], mix.inputs["Fac"])
-
-    nt.links.new(mix.outputs["Color"], em.inputs["Color"])
+    nt.links.new(ramp.outputs["Color"], em.inputs["Color"])
     nt.links.new(em.outputs["Emission"], out.inputs["Surface"])
-    me.materials.append(m)
-    ob.location = (0, 0, 0)
+    ob = _obj_from_bm(bm, "SkyDome", coll, m, smooth=True)
+    ob.scale = (radius, radius, radius)
+    ob.visible_shadow = False
+    ob.visible_diffuse = False
+    ob.visible_glossy = False
     return ob
 
 
