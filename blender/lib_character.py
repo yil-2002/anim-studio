@@ -97,7 +97,7 @@ def build_man(coll, name="Man", height=1.78, robe_color=None, turban_color=None)
     m_eye = mat("eye_white", (0.94, 0.93, 0.90), rough=0.35, spec=0.5)
     m_pupil = mat("pupil", (0.045, 0.035, 0.030), rough=0.25, spec=0.6)
     m_beard = mat("beard", (0.115, 0.098, 0.088), rough=0.95, spec=0.05)
-    fy = -0.093 * s         # yuz tekisligi (-Y = modelning oldi)
+    fy = -0.100 * s         # yuz tekisligi (-Y = modelning oldi), bosh yuzasidan tashqarida
     hz = 1.585 * s          # bosh markazi balandligi
     for side, sx in (("L", 1), ("R", -1)):
         eye = _sphere(f"{name}_eye{side}", coll, m_eye, 0.0225 * s,
@@ -105,24 +105,24 @@ def build_man(coll, name="Man", height=1.78, robe_color=None, turban_color=None)
                       scale=(1.0, 0.55, 0.85))
         parts[f"eye{side}"] = eye
         pup = _sphere(f"{name}_pupil{side}", coll, m_pupil, 0.0115 * s,
-                      (sx * 0.040 * s, fy - 0.012 * s, hz + 0.012 * s), segments=10, rings=8,
-                      scale=(1.0, 0.5, 1.0))
+                      (sx * 0.042 * s, fy - 0.016 * s, hz + 0.012 * s), segments=10, rings=8,
+                      scale=(1.0, 0.45, 1.0))
         parts[f"pupil{side}"] = pup
         brow = _sphere(f"{name}_brow{side}", coll, m_dark, 0.020 * s,
-                       (sx * 0.042 * s, fy + 0.004 * s, hz + 0.043 * s), segments=10, rings=6,
+                       (sx * 0.044 * s, fy + 0.004 * s, hz + 0.045 * s), segments=10, rings=6,
                        scale=(1.25, 0.45, 0.30))
         brow.rotation_euler = Euler((0, math.radians(sx * -8), 0))
         parts[f"brow{side}"] = brow
     nose = _sphere(f"{name}_nose", coll, m_skin, 0.020 * s,
-                   (0, fy - 0.008 * s, hz - 0.010 * s), segments=10, rings=8,
+                   (0, fy - 0.014 * s, hz - 0.010 * s), segments=10, rings=8,
                    scale=(0.8, 1.0, 1.1))
     parts["nose"] = nose
     mouth = _sphere(f"{name}_mouth", coll, m_dark, 0.019 * s,
-                    (0, fy + 0.004 * s, hz - 0.043 * s), segments=10, rings=6,
+                    (0, fy - 0.002 * s, hz - 0.045 * s), segments=10, rings=6,
                     scale=(1.5, 0.4, 0.55))
     parts["mouth"] = mouth
     beard = _sphere(f"{name}_beard", coll, m_beard, 0.086 * s,
-                    (0, -0.062 * s, hz - 0.072 * s), segments=16, rings=12,
+                    (0, -0.058 * s, hz - 0.070 * s), segments=16, rings=12,
                     scale=(1.02, 0.80, 1.05))
     parts["beard"] = beard
     # bosh kiyim ostidagi soch chizig'i
