@@ -87,8 +87,9 @@ def mat(name, color, rough=0.85, spec=0.25, emit=0.0, noise_scale=0.0,
 # OSMON / WORLD — ekran bo'ylab vertikal gradient + quyosh nuri
 # ----------------------------------------------------------------------------
 def setup_world(scene, sun_dir=(0.92, 0.42, 0.20), warmth=1.0, horizon=None, top=None,
-                strength=0.85):
-    """World = bir xil issiq ambient. Ko'rinadigan osmon gradienti — SkyDome'da."""
+                strength=1.0, sun_elev=7.0, sun_rot=8.0, dust=2.2):
+    """Nishita fizik osmon: teal -> amber gradient + quyosh halqasi. Cycles CPU'da barqaror."""
+    import math
     w = bpy.data.worlds.new("SKY")
     scene.world = w
     w.use_nodes = True
@@ -96,16 +97,31 @@ def setup_world(scene, sun_dir=(0.92, 0.42, 0.20), warmth=1.0, horizon=None, top
     nt.nodes.clear()
     out = nt.nodes.new("ShaderNodeOutputWorld")
     bg = nt.nodes.new("ShaderNodeBackground")
+    sky = nt.nodes.new("ShaderNodeTexSky")
+    try:
+        sky.sky_type = 'NISHITA'
+        sky.sun_disc = True
+        sky.sun_elevation = math.radians(sun_elev)
+        sky.sun_rotation = math.radians(sun_rot)
+        sky.sun_intensity = 1.4
+        sky.altitude = 120.0
+        sky.air_density = 1.1
+        sky.dust_density = dust
+        sky.ozone_density = 1.0
+        nt.links.new(sky.outputs["Color"], bg.inputs["Color"])
+    except (AttributeError, TypeError) as e:
+        print("SKY fallback:", e, flush=True)
+        bg.inputs["Color"].default_value = (0.34, 0.42, 0.46, 1)
     bg.inputs["Strength"].default_value = strength
-    bg.inputs["Color"].default_value = (0.34, 0.42, 0.46, 1)
     nt.links.new(bg.outputs["Background"], out.inputs["Surface"])
+    print("WORLD: nishita", flush=True)
     return w
 
 
 # ----------------------------------------------------------------------------
 # YORUG'LIK
 # ----------------------------------------------------------------------------
-def setup_lights(sun_dir=(0.92, 0.42, 0.20), energy=6.0, warm=1.0):
+def setup_lights(sun_dir=(0.92, 0.42, 0.20), energy=4.5, warm=1.0):
     d = Vector(sun_dir).normalized()
     ld = bpy.data.lights.new("SUN", type='SUN')
     ld.energy = energy
