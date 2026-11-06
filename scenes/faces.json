@@ -1,0 +1,126 @@
+{
+ "title": "faces",
+ "fps": 24,
+ "res": [
+  720,
+  1280
+ ],
+ "shots": [
+  {
+   "id": 1,
+   "dur": 0.0417,
+   "text": "az0",
+   "env": "orchard",
+   "seed": 11,
+   "tree_count": 4,
+   "actor": {
+    "pose": "idle",
+    "pos": [
+     0,
+     4.2,
+     0
+    ],
+    "height": 1.78
+   },
+   "cam": {
+    "type": "close",
+    "move": "none",
+    "target": [
+     0,
+     4.2,
+     1.45
+    ],
+    "azimuth": 0
+   },
+   "dust": false,
+   "hills": false
+  },
+  {
+   "id": 2,
+   "dur": 0.0417,
+   "text": "az90",
+   "env": "orchard",
+   "seed": 11,
+   "tree_count": 4,
+   "actor": {
+    "pose": "idle",
+    "pos": [
+     0,
+     4.2,
+     0
+    ],
+    "height": 1.78
+   },
+   "cam": {
+    "type": "close",
+    "move": "none",
+    "target": [
+     0,
+     4.2,
+     1.45
+    ],
+    "azimuth": 90
+   },
+   "dust": false,
+   "hills": false
+  },
+  {
+   "id": 3,
+   "dur": 0.0417,
+   "text": "az180",
+   "env": "orchard",
+   "seed": 11,
+   "tree_count": 4,
+   "actor": {
+    "pose": "idle",
+    "pos": [
+     0,
+     4.2,
+     0
+    ],
+    "height": 1.78
+   },
+   "cam": {
+    "type": "close",
+    "move": "none",
+    "target": [
+     0,
+     4.2,
+     1.45
+    ],
+    "azimuth": 180
+   },
+   "dust": false,
+   "hills": false
+  },
+  {
+   "id": 4,
+   "dur": 0.0417,
+   "text": "az270",
+   "env": "orchard",
+   "seed": 11,
+   "tree_count": 4,
+   "actor": {
+    "pose": "idle",
+    "pos": [
+     0,
+     4.2,
+     0
+    ],
+    "height": 1.78
+   },
+   "cam": {
+    "type": "close",
+    "move": "none",
+    "target": [
+     0,
+     4.2,
+     1.45
+    ],
+    "azimuth": 270
+   },
+   "dust": false,
+   "hills": false
+  }
+ ]
+}
