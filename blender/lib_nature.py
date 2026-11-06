@@ -110,6 +110,29 @@ def make_ground(coll, name="Ground", size=300, dry=False, color=None, color2=Non
     c2 = color2 or ((0.125, 0.190, 0.075) if not dry else (0.230, 0.180, 0.100))
     m = mat(f"ground_{name}", c1, rough=0.96, spec=0.04,
             noise_scale=2.6, noise_amount=0.22, second=c2)
+    # masofa bo'yicha "tuman" — cheksiz tekislikni yashiradi (painterly haze)
+    try:
+        nt = m.node_tree
+        bsdf = nt.nodes.get("Principled BSDF")
+        src = bsdf.inputs["Base Color"].links[0].from_socket if bsdf.inputs["Base Color"].links else None
+        tc2 = nt.nodes.new("ShaderNodeTexCoord")
+        ln = nt.nodes.new("ShaderNodeVectorMath")
+        ln.operation = 'LENGTH'
+        mr = nt.nodes.new("ShaderNodeMapRange")
+        mr.inputs["From Min"].default_value = 26.0
+        mr.inputs["From Max"].default_value = 150.0
+        haze = nt.nodes.new("ShaderNodeMixRGB")
+        haze.inputs["Color2"].default_value = (0.62, 0.53, 0.36, 1)
+        nt.links.new(tc2.outputs["Object"], ln.inputs[0])
+        nt.links.new(ln.outputs["Value"], mr.inputs["Value"])
+        nt.links.new(mr.outputs["Result"], haze.inputs["Fac"])
+        if src:
+            nt.links.new(src, haze.inputs["Color1"])
+        haze.inputs["Color1"].default_value = (*c1, 1) if not src else haze.inputs["Color1"].default_value
+        nt.links.new(haze.outputs["Color"], bsdf.inputs["Base Color"])
+        m.diffuse_color = (*c1, 1)
+    except Exception as e:
+        print("ground haze fail:", e, flush=True)
     return _obj_from_bm(bm, name, coll, m)
 
 
