@@ -1,59 +1,164 @@
 {
-  "title": "Anor daraxti — ibratli hikoya (demo)",
-  "fps": 24,
-  "res": [720, 1280],
-  "shots": [
+ "title": "Anor daraxti — ibratli hikoya (demo)",
+ "fps": 24,
+ "res": [
+  720,
+  1280
+ ],
+ "shots": [
+  {
+   "id": 1,
+   "dur": 4.5,
+   "text": "Har bir berilmagan narsani mahrumlik deb hisoblama.",
+   "env": "orchard",
+   "seed": 11,
+   "tree_count": 9,
+   "actor": {
+    "pose": "walk",
+    "pos": [
+     -1.4,
+     8.5,
+     0
+    ],
+    "walk_to": [
+     0.5,
+     3.6,
+     0
+    ],
+    "steps": 3,
+    "height": 1.78
+   },
+   "cam": {
+    "type": "wide",
+    "move": "push_in",
+    "target": [
+     0,
+     5.8,
+     0
+    ],
+    "azimuth": 90,
+    "amount": 1.0
+   },
+   "dust": true
+  },
+  {
+   "id": 2,
+   "dur": 4.0,
+   "text": "Har bir berilgan narsani ne'mat deb bil.",
+   "env": "orchard",
+   "seed": 22,
+   "tree_count": 8,
+   "actor": {
+    "pose": "idle",
+    "pos": [
+     0.4,
+     4.2,
+     0
+    ],
+    "yaw": 200,
+    "height": 1.78
+   },
+   "cam": {
+    "type": "medium",
+    "move": "pan_lr",
+    "target": [
+     0.4,
+     4.2,
+     1.35
+    ],
+    "azimuth": 100,
+    "amount": 1.0
+   },
+   "dust": true
+  },
+  {
+   "id": 3,
+   "dur": 4.0,
+   "text": "Yaxshi ko'rsa beradi, yaxshi ko'rmasa bermaydi.",
+   "env": "orchard",
+   "seed": 33,
+   "tree_count": 6,
+   "trees": [
     {
-      "id": 1,
-      "dur": 4.5,
-      "text": "Har bir berilmagan narsani mahrumlik deb hisoblama.",
-      "env": "orchard",
-      "seed": 11,
-      "tree_count": 9,
-      "actor": { "pose": "walk", "pos": [-2.6, 2.6, 0], "walk_to": [2.2, 1.2, 0], "steps": 3, "height": 1.78 },
-      "cam": { "type": "wide", "move": "push_in", "target": [0, 2.2, 0], "azimuth": 90, "amount": 1.0 },
-      "dust": true
+     "pos": [
+      0,
+      6.2,
+      0
+     ],
+     "h": 3.6,
+     "fruit": 16,
+     "canopy": 1.1
     },
     {
-      "id": 2,
-      "dur": 4.0,
-      "text": "Har bir berilgan narsani ne'mat deb bil.",
-      "env": "orchard",
-      "seed": 22,
-      "tree_count": 8,
-      "actor": { "pose": "idle", "pos": [0.4, 4.2, 0], "yaw": 200, "height": 1.78 },
-      "cam": { "type": "medium", "move": "pan_lr", "target": [0.3, 4.0, 1.25], "azimuth": 100, "amount": 1.0 },
-      "dust": true
+     "pos": [
+      -4.2,
+      8.0,
+      0
+     ],
+     "h": 3.2,
+     "fruit": 7
     },
     {
-      "id": 3,
-      "dur": 4.0,
-      "text": "Yaxshi ko'rsa beradi, yaxshi ko'rmasa bermaydi.",
-      "env": "orchard",
-      "seed": 33,
-      "tree_count": 6,
-      "trees": [
-        { "pos": [0, 6.2, 0], "h": 3.6, "fruit": 16, "canopy": 1.1 },
-        { "pos": [-4.2, 8.0, 0], "h": 3.2, "fruit": 7 },
-        { "pos": [4.0, 7.5, 0], "h": 3.3, "fruit": 8 }
-      ],
-      "cam": { "type": "detail", "move": "push_in", "target": [0, 6.2, 2.45], "azimuth": 90, "dist_scale": 3.4, "amount": 1.0 },
-      "dust": true,
-      "dust_count": 35
-    },
-    {
-      "id": 4,
-      "dur": 3.5,
-      "text": "Bu noto'g'ri tushuncha.",
-      "env": "orchard_dry",
-      "dry": true,
-      "seed": 44,
-      "tree_count": 7,
-      "actor": { "pose": "kneel", "pos": [0.2, 3.6, 0], "yaw": 190, "height": 1.78 },
-      "cam": { "type": "wide", "move": "pull_out", "target": [0.2, 3.4, 1.0], "azimuth": 96, "amount": 1.0 },
-      "dust": true,
-      "sky_horizon": [0.95, 0.62, 0.32],
-      "sun_energy": 2.6
+     "pos": [
+      4.0,
+      7.5,
+      0
+     ],
+     "h": 3.3,
+     "fruit": 8
     }
-  ]
+   ],
+   "cam": {
+    "type": "detail",
+    "move": "push_in",
+    "target": [
+     0,
+     6.2,
+     2.45
+    ],
+    "azimuth": 90,
+    "dist_scale": 3.4,
+    "amount": 1.0
+   },
+   "dust": true,
+   "dust_count": 35
+  },
+  {
+   "id": 4,
+   "dur": 3.5,
+   "text": "Bu noto'g'ri tushuncha.",
+   "env": "orchard_dry",
+   "dry": true,
+   "seed": 44,
+   "tree_count": 7,
+   "actor": {
+    "pose": "kneel",
+    "pos": [
+     0.2,
+     3.6,
+     0
+    ],
+    "yaw": 190,
+    "height": 1.78
+   },
+   "cam": {
+    "type": "wide",
+    "move": "pull_out",
+    "target": [
+     0.2,
+     3.4,
+     1.0
+    ],
+    "azimuth": 96,
+    "amount": 1.0
+   },
+   "dust": true,
+   "sky_horizon": [
+    0.95,
+    0.62,
+    0.32
+   ],
+   "sun_energy": 2.6
+  }
+ ]
 }

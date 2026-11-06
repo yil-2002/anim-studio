@@ -7,36 +7,31 @@
  ],
  "shots": [
   {
-   "id": 1,
-   "dur": 0.0417,
-   "text": "Har bir berilmagan narsani mahrumlik deb hisoblama.",
+   "id": 2,
+   "dur": 4.0,
+   "text": "Har bir berilgan narsani ne'mat deb bil.",
    "env": "orchard",
-   "seed": 11,
-   "tree_count": 9,
+   "seed": 22,
+   "tree_count": 8,
    "actor": {
-    "pose": "walk",
+    "pose": "idle",
     "pos": [
-     -2.6,
-     2.6,
+     0.4,
+     4.2,
      0
     ],
-    "walk_to": [
-     2.2,
-     1.2,
-     0
-    ],
-    "steps": 3,
+    "yaw": 200,
     "height": 1.78
    },
    "cam": {
-    "type": "wide",
-    "move": "push_in",
+    "type": "medium",
+    "move": "pan_lr",
     "target": [
-     0,
-     2.2,
-     0
+     0.4,
+     4.2,
+     1.35
     ],
-    "azimuth": 90,
+    "azimuth": 100,
     "amount": 1.0
    },
    "dust": true
