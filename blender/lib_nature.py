@@ -336,6 +336,10 @@ def make_sun(coll, direction=(0.35, -1.0, 0.22), distance=70, size=5.0):
     ob = _obj_from_bm(bm, "SunDisc", coll, m)
     ob.location = d * distance
     ob.visible_shadow = False
+    ob.visible_diffuse = False        # faqat ko'rinadi, sahnani yoritmaydi
+    ob.visible_glossy = False
+    ob.visible_transmission = False
+    ob.visible_volume_scatter = False
     return ob
 
 

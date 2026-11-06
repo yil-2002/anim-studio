@@ -62,8 +62,8 @@ def build(plan, shot, outdir, samples=6, preview=None, quality=None, gpu=False,
     print("STAGE: env start", flush=True)
     # ---------------- YER / FON ----------------
     NA.make_ground(c_env, size=340, dry=dry,
-                   color=tuple(shot.get("ground_color", (0.9, 0.05, 0.9))),
-                   color2=tuple(shot.get("ground_color2", (0.6, 0.02, 0.7))))
+                   color=tuple(shot.get("ground_color", (0.085, 0.140, 0.055))),
+                   color2=tuple(shot.get("ground_color2", (0.165, 0.245, 0.095))))
     try:
         gm = bpy.data.materials.get("ground_Ground")
         bc = gm.node_tree.nodes["Principled BSDF"].inputs["Base Color"].default_value
