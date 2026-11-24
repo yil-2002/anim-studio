@@ -1,0 +1,42 @@
+name: tg-sync
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  repository_dispatch:
+    types: [tg_sync]
+  workflow_dispatch:
+
+concurrency:
+  group: tg-sync
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Sync channels
+        env:
+          PYTHONUNBUFFERED: "1"
+          TG_API_ID: ${{ secrets.TG_API_ID }}
+          TG_API_HASH: ${{ secrets.TG_API_HASH }}
+          TG_SESSION: ${{ secrets.TG_SESSION }}
+          SYNC_MAP: ${{ secrets.SYNC_MAP }}
+          WORKER_URL: ${{ secrets.WORKER_URL }}
+          INTERNAL_API_SECRET: ${{ secrets.INTERNAL_API_SECRET }}
+        run: python sync.py
