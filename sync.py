@@ -5,7 +5,8 @@ keeping their original order. Progress checkpoints live behind a private HTTP
 endpoint, so the runner itself is stateless.
 
 PUBLIC REPO: this script must never print channel IDs, message text, captions,
-usernames or file names. All output goes through ``report()`` and is anonymous.
+usernames or file names. All output goes through ``report()``: only ``Job started`` /
+``Job finished: OK|ERR``. Temp files get random uuid4 names and are always deleted.
 """
 
 from __future__ import annotations
@@ -18,6 +19,7 @@ import os
 import shutil
 import sys
 import tempfile
+import threading
 import uuid
 import warnings
 from dataclasses import dataclass, field
@@ -29,7 +31,7 @@ from telethon.sessions import StringSession
 from telethon.tl import types
 from telethon.tl.functions.messages import SendMediaRequest, SendMultiMediaRequest, UploadMediaRequest
 
-from fast_telethon import FastTelethon, flood_retry, pick_connections
+from fast_telethon import FastTelethon, flood_retry
 
 # Third-party loggers/warnings may include identifiers — silence them all.
 logging.disable(logging.CRITICAL)
@@ -40,8 +42,28 @@ INITIAL_POSTS = 5
 HTTP_TIMEOUT = 30.0
 
 
+_OUT = sys.stdout
+
+
 def report(line: str) -> None:
-    print(line, flush=True)
+    """The ONLY output channel. Callers pass fixed, anonymous strings."""
+    try:
+        _OUT.write(line + "\n")
+        _OUT.flush()
+    except Exception:  # noqa: BLE001
+        pass
+
+
+def silence() -> None:
+    """Route every other output path (stderr, hooks, stray prints) to /dev/null."""
+    global _OUT
+    _OUT = os.fdopen(os.dup(1), "w", buffering=1)
+    devnull = os.open(os.devnull, os.O_WRONLY)
+    os.dup2(devnull, 1)  # stray print() from any library
+    os.dup2(devnull, 2)  # tracebacks, warnings, C-level stderr
+    sys.excepthook = lambda *a: None
+    sys.unraisablehook = lambda *a: None
+    threading.excepthook = lambda *a: None
 
 
 class ConfigError(Exception):
@@ -147,6 +169,7 @@ class Unit:
     checkpoint: int
     files: list[str | None] = field(default_factory=list)
     thumbs: list[str | None] = field(default_factory=list)
+    workdir: str | None = None  # per-unit random temp dir, removed as a whole
 
 
 def is_supported(msg: types.Message) -> bool:
@@ -235,22 +258,25 @@ class Downloader:
         self.fast = fast
         self.workdir = workdir
 
-    def _path(self) -> str:
-        return os.path.join(self.workdir, uuid.uuid4().hex)
+    def _path(self, unit: Unit) -> str:
+        """Random name only — the original Telegram file name is never used on disk."""
+        return os.path.join(unit.workdir, uuid.uuid4().hex)
 
     async def prepare(self, unit: Unit) -> None:
+        unit.workdir = os.path.join(self.workdir, uuid.uuid4().hex)
+        os.mkdir(unit.workdir, 0o700)
         for msg in unit.messages:
             media = msg.media
             if isinstance(media, types.MessageMediaPhoto):
-                path = await flood_retry(lambda: self.client.download_media(msg, file=self._path()))
+                path = await flood_retry(lambda: self.client.download_media(msg, file=self._path(unit)))
                 unit.files.append(path)
                 unit.thumbs.append(None)
             elif isinstance(media, types.MessageMediaDocument):
                 doc = media.document
-                unit.files.append(await self.fast.download(doc, self._path(), document_size(doc)))
+                unit.files.append(await self.fast.download(doc, self._path(unit), document_size(doc)))
                 thumb = None
                 if doc.thumbs and not is_plain_file(doc.attributes):
-                    thumb = await flood_retry(lambda: self.client.download_media(msg, file=self._path(), thumb=-1))
+                    thumb = await flood_retry(lambda: self.client.download_media(msg, file=self._path(unit), thumb=-1))
                 unit.thumbs.append(thumb)
             else:
                 unit.files.append(None)
@@ -258,12 +284,10 @@ class Downloader:
 
 
 def cleanup(unit: Unit) -> None:
-    for path in (*unit.files, *unit.thumbs):
-        if path:
-            try:
-                os.remove(path)
-            except OSError:
-                pass
+    """Remove the unit's temp dir, including partial downloads that never returned a path."""
+    if unit.workdir:
+        shutil.rmtree(unit.workdir, ignore_errors=True)
+        unit.workdir = None
 
 
 # --------------------------------------------------------------------------- sending
@@ -281,7 +305,7 @@ class Sender:
         if is_photo:
             return types.InputMediaUploadedPhoto(file=uploaded, spoiler=bool(media.spoiler))
         doc = media.document
-        thumb_file = await flood_retry(lambda: self.client.upload_file(thumb)) if thumb else None
+        thumb_file = await flood_retry(lambda: self.client.upload_file(thumb, file_name="thumb.jpg")) if thumb else None
         attrs = list(doc.attributes)
         return types.InputMediaUploadedDocument(
             file=uploaded,
@@ -404,8 +428,6 @@ async def run(cfg: Config) -> int:
             pairs = remote_pairs or cfg.pairs
             if not pairs:
                 raise ConfigError("no channels configured (use /channels in the bot or SYNC_MAP)")
-            origin = "bot" if remote_pairs else "SYNC_MAP"
-            report(f"Sync started: {len(pairs)} channel(s) from {origin}, up to {pick_connections(1 << 40)} parallel parts")
 
             client = TelegramClient(StringSession(cfg.session), cfg.api_id, cfg.api_hash)
             await client.connect()
@@ -416,20 +438,15 @@ async def run(cfg: Config) -> int:
                 await client.get_dialogs()
                 fast = FastTelethon(client)
 
-                for n, (source_id, target_id) in enumerate(pairs, start=1):
+                for source_id, target_id in pairs:
                     try:
                         res = await sync_channel(
                             client, fast, state, workdir, source_id, target_id, checkpoints.get(str(source_id))
                         )
-                    except Exception as e:  # noqa: BLE001 — report class name only
+                    except Exception as e:  # noqa: BLE001 — nothing about it is printed
                         res = ChannelResult(error=type(e).__name__)
-                    line = f"Channel #{n}: synced {res.synced} items"
-                    if res.skipped:
-                        line += f", skipped {res.skipped}"
                     if res.error:
                         failed += 1
-                        line += f" — stopped ({res.error})"
-                    report(line)
             finally:
                 await client.disconnect()
     finally:
@@ -438,19 +455,15 @@ async def run(cfg: Config) -> int:
 
 
 def main() -> int:
+    silence()
+    report("Job started")
+    code = 1
     try:
-        cfg = load_config()
-    except ConfigError as e:
-        report(f"Config error: {e}")
-        return 2
-    try:
-        return uvloop.run(run(cfg))
-    except BaseException as e:  # noqa: BLE001 — never print tracebacks (they may contain identifiers)
-        if isinstance(e, ConfigError):
-            report(f"Config error: {e}")
-        else:
-            report(f"Sync failed: {type(e).__name__}")
-        return 1
+        code = uvloop.run(run(load_config()))
+    except BaseException:  # noqa: BLE001 — never print errors/tracebacks (they may contain identifiers)
+        code = 1
+    report("Job finished: OK" if code == 0 else "Job finished: ERR")
+    return code
 
 
 if __name__ == "__main__":

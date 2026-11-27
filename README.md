@@ -9,8 +9,8 @@ are re-sent as new messages in their original order.
 1. Reads the last synced message ID per source channel from a private HTTP endpoint
    (`GET /internal/sync/state`). With no checkpoint, it starts from the latest 5 posts.
 2. Downloads media (512 KB chunks, 4–8 parallel parts) while the previous post is
-   uploading — a bounded queue of 2 keeps disk usage low. Temp files are deleted
-   right after each send.
+   uploading — a bounded queue of 2 keeps disk usage low. Temp files (random names)
+   are deleted right after each send.
 3. After every post/album it stores the new checkpoint (`POST /internal/sync/state`).
 
 Runs every 6 hours, on `repository_dispatch` (`tg_sync`) and manually.
@@ -33,6 +33,9 @@ state endpoint as `map`; `SYNC_MAP` is used only when that list is empty. A `tar
 
 ## Privacy
 
-Workflow logs in a public repo are public. The runner prints only anonymous summaries
-such as `Channel #1: synced 4 items` — never IDs, text, captions, usernames or file names.
-Third-party logging is disabled and errors are reported by exception class only.
+Workflow logs in a public repo are public. The runner prints exactly two lines —
+`Job started` and `Job finished: OK` / `Job finished: ERR` — and nothing else: no IDs,
+text, captions, usernames, file names, sizes, error messages or tracebacks
+(stderr and third-party logging are redirected to `/dev/null`).
+Media is downloaded under random `uuid4` names into a per-post temp directory that is
+always removed, even on failure.
