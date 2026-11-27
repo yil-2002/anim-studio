@@ -23,9 +23,13 @@ All settings are repository **secrets** (Settings → Secrets and variables → 
 |---|---|
 | `TG_API_ID`, `TG_API_HASH` | Telegram API credentials |
 | `TG_SESSION` | Telethon `StringSession` string |
-| `SYNC_MAP` | JSON list: `[{"source": <id>, "target": <id>}]` |
+| `SYNC_MAP` | *Optional* fallback, JSON list: `[{"source": <id>, "target": <id> \| "me"}]` |
 | `WORKER_URL` | Base URL of the state endpoint |
 | `INTERNAL_API_SECRET` | Bearer token for the state endpoint |
+
+The channel list is normally managed from the Telegram bot (`/channels`) and served by the
+state endpoint as `map`; `SYNC_MAP` is used only when that list is empty. A `target` of
+`"me"` sends to the account's Saved Messages.
 
 ## Privacy
 

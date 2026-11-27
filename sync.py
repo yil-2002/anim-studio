@@ -51,27 +51,41 @@ class ConfigError(Exception):
 # --------------------------------------------------------------------------- config
 
 
+Target = int | str  # chat ID or "me" (Saved Messages)
+Pair = tuple[int, Target]
+
+
+def parse_pairs(raw: object) -> list[Pair]:
+    """``[{source, target}]`` → pairs. ``target`` may be ``"me"``. Raises ValueError/TypeError/KeyError."""
+    if not isinstance(raw, list):
+        raise TypeError("expected a list")
+    pairs: list[Pair] = []
+    for item in raw:
+        target = item["target"]
+        pairs.append((int(item["source"]), "me" if target == "me" else int(target)))
+    return pairs
+
+
 @dataclass(frozen=True)
 class Config:
     api_id: int
     api_hash: str
     session: str
-    pairs: list[tuple[int, int]]
+    pairs: list[Pair]  # SYNC_MAP fallback; the Worker's list takes priority
     worker_url: str
     secret: str
 
 
 def load_config() -> Config:
-    missing = [k for k in ("TG_API_ID", "TG_API_HASH", "TG_SESSION", "SYNC_MAP", "WORKER_URL", "INTERNAL_API_SECRET") if not os.environ.get(k)]
+    missing = [k for k in ("TG_API_ID", "TG_API_HASH", "TG_SESSION", "WORKER_URL", "INTERNAL_API_SECRET") if not os.environ.get(k)]
     if missing:
         raise ConfigError(f"missing env: {', '.join(missing)}")
-    try:
-        raw = json.loads(os.environ["SYNC_MAP"])
-        pairs = [(int(item["source"]), int(item["target"])) for item in raw]
-    except (ValueError, TypeError, KeyError) as e:
-        raise ConfigError("SYNC_MAP must be a JSON list of {source, target}") from e
-    if not pairs:
-        raise ConfigError("SYNC_MAP is empty")
+    pairs: list[Pair] = []
+    if os.environ.get("SYNC_MAP", "").strip():
+        try:
+            pairs = parse_pairs(json.loads(os.environ["SYNC_MAP"]))
+        except (ValueError, TypeError, KeyError) as e:
+            raise ConfigError("SYNC_MAP must be a JSON list of {source, target}") from e
     try:
         api_id = int(os.environ["TG_API_ID"])
     except ValueError as e:
@@ -95,14 +109,20 @@ class StateApi:
         self.url = f"{base}/internal/sync/state"
         self.headers = {"Authorization": f"Bearer {secret}"}
 
-    async def load(self) -> dict[str, int]:
+    async def load(self) -> tuple[dict[str, int], list[Pair]]:
+        """Returns (checkpoints, channel pairs configured via the bot's /channels menu)."""
         res = await self.http.get(self.url, headers=self.headers)
         res.raise_for_status()
         data = res.json()
-        ids = data.get("last_message_id") if isinstance(data, dict) else None
-        if not isinstance(ids, dict):
-            return {}
-        return {str(k): int(v) for k, v in ids.items() if isinstance(v, int)}
+        if not isinstance(data, dict):
+            return {}, []
+        ids = data.get("last_message_id")
+        checkpoints = {str(k): int(v) for k, v in ids.items() if isinstance(v, int)} if isinstance(ids, dict) else {}
+        try:
+            pairs = parse_pairs(data.get("map") or [])
+        except (ValueError, TypeError, KeyError):
+            pairs = []
+        return checkpoints, pairs
 
     async def save(self, source: int, last_id: int) -> None:
         for attempt in range(3):
@@ -325,7 +345,7 @@ async def sync_channel(
     state: StateApi,
     workdir: str,
     source_id: int,
-    target_id: int,
+    target_id: Target,
     last_id: int | None,
 ) -> ChannelResult:
     result = ChannelResult()
@@ -380,18 +400,23 @@ async def run(cfg: Config) -> int:
     try:
         async with httpx.AsyncClient(timeout=HTTP_TIMEOUT) as http:
             state = StateApi(http, cfg.worker_url, cfg.secret)
-            checkpoints = await state.load()
+            checkpoints, remote_pairs = await state.load()
+            pairs = remote_pairs or cfg.pairs
+            if not pairs:
+                raise ConfigError("no channels configured (use /channels in the bot or SYNC_MAP)")
+            origin = "bot" if remote_pairs else "SYNC_MAP"
+            report(f"Sync started: {len(pairs)} channel(s) from {origin}, up to {pick_connections(1 << 40)} parallel parts")
 
             client = TelegramClient(StringSession(cfg.session), cfg.api_id, cfg.api_hash)
             await client.connect()
             try:
                 if not await client.is_user_authorized():
                     raise ConfigError("TG_SESSION is not authorized")
-                # Fill the entity cache so bare -100... IDs resolve.
+                # Fill the entity cache so bare -100... IDs resolve ("me" resolves to Saved Messages).
                 await client.get_dialogs()
                 fast = FastTelethon(client)
 
-                for n, (source_id, target_id) in enumerate(cfg.pairs, start=1):
+                for n, (source_id, target_id) in enumerate(pairs, start=1):
                     try:
                         res = await sync_channel(
                             client, fast, state, workdir, source_id, target_id, checkpoints.get(str(source_id))
@@ -418,7 +443,6 @@ def main() -> int:
     except ConfigError as e:
         report(f"Config error: {e}")
         return 2
-    report(f"Sync started: {len(cfg.pairs)} channel(s), up to {pick_connections(1 << 40)} parallel parts")
     try:
         return uvloop.run(run(cfg))
     except BaseException as e:  # noqa: BLE001 — never print tracebacks (they may contain identifiers)
